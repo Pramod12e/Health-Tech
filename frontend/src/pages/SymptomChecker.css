@@ -1,0 +1,489 @@
+/* =====================================================
+   SYMPTOM CHECKER STYLES (SymptomChecker.css)
+   Designed for low literacy & high accessibility
+===================================================== */
+
+.symptom-page {
+  background: var(--soft-bg, #f8fafc);
+  min-height: calc(100vh - 120px);
+  padding-bottom: 60px;
+}
+
+.symptom-hero {
+  background: linear-gradient(135deg, #073f52 0%, #0b576e 55%, #0d825f 100%);
+  color: #ffffff;
+  padding: 48px 0 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.symptom-hero::after {
+  content: "";
+  position: absolute;
+  right: -50px;
+  top: -50px;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+
+.symptom-hero-content {
+  max-width: 780px;
+}
+
+.symptom-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  backdrop-filter: blur(8px);
+}
+
+.symptom-page-title {
+  font-size: 36px !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  margin-bottom: 12px !important;
+  letter-spacing: -0.5px;
+}
+
+.symptom-page-subtitle {
+  font-size: 17px !important;
+  opacity: 0.92;
+  line-height: 1.5 !important;
+  margin-bottom: 22px !important;
+}
+
+.symptom-audio-btn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 12px !important;
+  padding: 10px 20px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  transition: all 0.25s ease !important;
+}
+
+.symptom-audio-btn:hover,
+.symptom-audio-btn.active-audio {
+  background: #ffffff !important;
+  color: #073f52 !important;
+  border-color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* =====================================================
+   CARDS
+===================================================== */
+.symptom-card {
+  border-radius: 18px !important;
+  border: 1.5px solid #dceced !important;
+  margin-bottom: 24px;
+  background: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(7, 63, 82, 0.05) !important;
+}
+
+.card-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.step-tag {
+  background: var(--accent-bg, rgba(11, 143, 163, 0.12));
+  color: var(--secondary, #0b8fa3);
+  font-weight: 800;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.card-title {
+  font-weight: 800 !important;
+  color: var(--primary, #073f52) !important;
+}
+
+/* Voice card */
+.voice-action-box {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #f0fdfa;
+  border: 2px dashed #99f6e4;
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+
+.mic-button {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: none;
+  background: #0d9488;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.35);
+}
+
+.mic-button:hover {
+  transform: scale(1.06);
+  background: #0f766e;
+}
+
+.mic-button.is-recording {
+  background: #dc2626;
+  box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.25);
+  animation: pulseMic 1.2s infinite;
+}
+
+@keyframes pulseMic {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.mic-status-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.mic-status-text strong {
+  font-size: 17px;
+  color: #073f52;
+}
+
+.mic-status-text span {
+  font-size: 13px;
+  color: #4b636e;
+  margin-top: 3px;
+}
+
+.voice-transcript-bubble {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: #f1f5f9;
+  border-left: 4px solid var(--secondary, #0b8fa3);
+  border-radius: 8px;
+  font-size: 15px;
+  color: #1e293b;
+}
+
+/* Body Area selector */
+.body-areas-grid {
+  margin-top: 8px;
+}
+
+.body-area-btn {
+  width: 100%;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 14px;
+  border: 2px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.body-area-btn:hover {
+  border-color: #0b8fa3;
+  background: #f0fdfa;
+  transform: translateY(-2px);
+}
+
+.body-area-btn.selected {
+  border-color: #0d9488;
+  background: #ccfbf1;
+  box-shadow: 0 6px 14px rgba(13, 148, 136, 0.2);
+}
+
+.area-icon {
+  font-size: 26px;
+}
+
+.area-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #073f52;
+  text-align: center;
+}
+
+/* Symptom chips */
+.symptom-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.symptom-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.symptom-chip-btn:hover {
+  border-color: #0b8fa3;
+  background: #f8fafc;
+}
+
+.symptom-chip-btn.checked {
+  background: #047857;
+  color: #ffffff;
+  border-color: #047857;
+  box-shadow: 0 4px 12px rgba(4, 120, 87, 0.25);
+}
+
+.sym-icon {
+  font-size: 18px;
+}
+
+.sym-check {
+  color: #ffffff;
+}
+
+/* Pill selector for duration and severity */
+.pill-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill-btn {
+  flex: 1;
+  min-width: 110px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pill-btn:hover {
+  border-color: #0b8fa3;
+  background: #f8fafc;
+}
+
+.pill-btn.active {
+  background: #073f52;
+  color: #ffffff;
+  border-color: #073f52;
+}
+
+.pill-btn.severity-mild.active {
+  background: #059669;
+  border-color: #059669;
+}
+
+.pill-btn.severity-medium.active {
+  background: #d97706;
+  border-color: #d97706;
+}
+
+.pill-btn.severity-severe.active {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.symptom-submit-btn {
+  background: #059669 !important;
+  color: #ffffff !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  padding: 14px 24px !important;
+  border-radius: 12px !important;
+  text-transform: none !important;
+  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3) !important;
+}
+
+.symptom-submit-btn:hover {
+  background: #047857 !important;
+  transform: translateY(-2px);
+}
+
+/* =====================================================
+   RESULT CARD
+===================================================== */
+.symptom-result-sticky {
+  position: sticky;
+  top: 90px;
+}
+
+.symptom-result-card {
+  border-radius: 20px !important;
+  padding: 12px;
+}
+
+.symptom-result-card.safe-card {
+  border: 2px solid #a7f3d0 !important;
+  background: #ffffff !important;
+}
+
+.symptom-result-card.urgent-card {
+  border: 2px solid #fecaca !important;
+  background: #fffbfa !important;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.urgency-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.urgency-badge.green {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.urgency-badge.red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.result-title {
+  font-weight: 800 !important;
+  color: #073f52 !important;
+  font-size: 22px !important;
+}
+
+.result-desc {
+  font-size: 15px !important;
+  color: #334155 !important;
+  line-height: 1.6 !important;
+  margin-top: 8px !important;
+}
+
+.emergency-callout {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px;
+  background: #fee2e2;
+  border-radius: 12px;
+  border: 1.5px solid #f87171;
+}
+
+.emergency-callout strong {
+  font-size: 16px;
+  color: #991b1b;
+}
+
+.recommended-doctor-card {
+  margin-top: 20px;
+  padding: 18px;
+  background: #f0fdfa;
+  border-radius: 14px;
+  border: 1px solid #ccfbf1;
+}
+
+.rec-doc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.rec-specialty-name {
+  font-weight: 800 !important;
+  color: #0f766e !important;
+  font-size: 20px !important;
+  margin-bottom: 6px !important;
+}
+
+.connect-doc-btn {
+  background: #0f766e !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  padding: 12px 18px !important;
+  border-radius: 10px !important;
+  text-transform: none !important;
+}
+
+.connect-doc-btn:hover {
+  background: #115e59 !important;
+}
+
+.home-care-tips {
+  margin-top: 18px;
+  padding: 14px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.home-care-tips ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.placeholder-card {
+  border: 2px dashed #cbd5e1 !important;
+  background: #ffffff !important;
+}
+
+.placeholder-icon {
+  font-size: 54px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+  .symptom-page-title {
+    font-size: 26px !important;
+  }
+  
+  .voice-action-box {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .pill-selector {
+    flex-direction: column;
+  }
+}

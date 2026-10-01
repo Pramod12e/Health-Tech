@@ -1,0 +1,421 @@
+/* =====================================================
+   PATIENT HISTORY & PRESCRIPTION STYLES
+   Designed for low literacy & high accessibility
+===================================================== */
+
+.history-page {
+  background: var(--soft-bg, #f8fafc);
+  min-height: calc(100vh - 120px);
+  padding-bottom: 60px;
+}
+
+.history-hero {
+  background: linear-gradient(135deg, #073f52 0%, #0e7490 55%, #059669 100%);
+  color: #ffffff;
+  padding: 44px 0 38px;
+}
+
+.history-hero-content {
+  max-width: 780px;
+}
+
+.history-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  backdrop-filter: blur(8px);
+}
+
+.history-page-title {
+  font-size: 34px !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  margin-bottom: 10px !important;
+}
+
+.history-page-subtitle {
+  font-size: 16px !important;
+  opacity: 0.92;
+  line-height: 1.5 !important;
+  margin-bottom: 20px !important;
+}
+
+.history-audio-btn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 12px !important;
+  padding: 9px 18px !important;
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  transition: all 0.25s ease !important;
+}
+
+.history-audio-btn:hover,
+.history-audio-btn.active-audio {
+  background: #ffffff !important;
+  color: #073f52 !important;
+  border-color: #ffffff !important;
+  transform: translateY(-2px);
+}
+
+/* =====================================================
+   SIDEBAR VISITS LIST
+===================================================== */
+.visits-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.visits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.visit-item-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 2px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.visit-item-btn:hover {
+  border-color: #0b8fa3;
+  transform: translateX(4px);
+  background: #f0fdfa;
+}
+
+.visit-item-btn.selected {
+  border-color: #059669;
+  background: #f0fdf4;
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.18);
+}
+
+.visit-item-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visit-item-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.visit-item-info {
+  flex: 1;
+}
+
+.visit-doc-name {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #0f172a;
+}
+
+.visit-specialty {
+  font-size: 12.5px !important;
+  color: #059669 !important;
+  font-weight: 700;
+}
+
+.visit-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: #64748b;
+  align-items: center;
+}
+
+.history-cta-card {
+  padding: 18px;
+  background: #f0fdfa;
+  border-radius: 16px;
+  border: 1px dashed #0d9488;
+}
+
+.cta-book-btn {
+  background: #0d9488 !important;
+  text-transform: none !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+}
+
+/* =====================================================
+   PRESCRIPTION CARD
+===================================================== */
+.prescription-detail-card {
+  border-radius: 20px !important;
+  border: 1.5px solid #dceced !important;
+  background: #ffffff !important;
+}
+
+.prescription-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.presc-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.action-audio-btn {
+  background: #059669 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  text-transform: none !important;
+}
+
+.action-audio-btn.is-speaking {
+  background: #dc2626 !important;
+}
+
+.presc-meta-grid {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 22px;
+}
+
+.meta-label {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.meta-val {
+  font-size: 14.5px;
+  color: #0f172a;
+}
+
+.highlight-condition {
+  color: #0e7490 !important;
+  font-weight: 800;
+}
+
+.presc-box {
+  padding: 16px;
+  border-radius: 14px;
+  margin-bottom: 22px;
+}
+
+.box-header-title {
+  font-weight: 800 !important;
+  margin-bottom: 6px !important;
+}
+
+.symptoms-box {
+  background: #fefce8;
+  border: 1px solid #fef08a;
+}
+
+.symptoms-box .box-header-title {
+  color: #854d0e;
+}
+
+.doctor-notes-box {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.doctor-notes-box .box-header-title {
+  color: #065f46;
+}
+
+/* =====================================================
+   MEDICINES SECTION & PICTOGRAPHIC TIMINGS
+===================================================== */
+.medicines-section {
+  margin-bottom: 24px;
+}
+
+.medicines-heading {
+  font-weight: 800 !important;
+  color: #073f52 !important;
+  font-size: 20px !important;
+  margin-bottom: 4px !important;
+}
+
+.medicines-table-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.medicine-row-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 14px;
+  flex-wrap: wrap;
+  transition: border-color 0.2s ease;
+}
+
+.medicine-row-card:hover {
+  border-color: #059669;
+}
+
+.med-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.med-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.med-name {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #0f172a;
+}
+
+.med-duration {
+  font-size: 12.5px !important;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.med-dosage-note {
+  font-size: 13px !important;
+  color: #059669;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* Timing Chips with Pictograms */
+.med-timing-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.timing-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #94a3b8;
+  opacity: 0.45;
+}
+
+.timing-chip.active {
+  opacity: 1;
+}
+
+.timing-chip.morning.active {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.timing-chip.afternoon.active {
+  background: #fed7aa;
+  color: #c2410c;
+  border-color: #fdba74;
+}
+
+.timing-chip.night.active {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+
+.timing-chip.food-rule.active {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.follow-up-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: #fef3c7;
+  border-radius: 12px;
+  border: 1px solid #fde68a;
+  margin-top: 18px;
+}
+
+/* Print styling */
+@media print {
+  .accessibility-bar,
+  .main-navbar,
+  .history-hero,
+  .visits-sidebar-header,
+  .visits-list,
+  .history-cta-card,
+  .presc-actions,
+  .site-footer {
+    display: none !important;
+  }
+
+  .prescription-detail-card {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .prescription-topbar {
+    flex-direction: column;
+  }
+
+  .medicine-row-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

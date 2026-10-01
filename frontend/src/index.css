@@ -1,4 +1,4 @@
-﻿/* =====================================================
+/* =====================================================
    GLOBAL STYLES  (index.css)
    -----------------------------------------------------
    Contains ONLY:
@@ -62,7 +62,15 @@ body {
   margin: 0;
   min-width: 320px;
   background: #ffffff;
-  padding-top: 70px;
+  padding-top: 0;
+}
+
+html[data-fontsize="large"] {
+  font-size: 18px;
+}
+
+html[data-fontsize="xlarge"] {
+  font-size: 20px;
 }
 
 html,
@@ -180,30 +188,150 @@ h2 {
 }
 
 /* =====================================================
-   NAVBAR  (global)
+   ACCESSIBILITY BAR (top utility for low literacy)
 ===================================================== */
+.accessibility-bar {
+  background: #042e3b;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 6px 16px;
+  position: relative;
+  z-index: 1250;
+  font-size: 13px;
+}
+
+.accessibility-bar-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.access-emergency-btn {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  padding: 4px 12px !important;
+  border-radius: 999px !important;
+  text-transform: none !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.access-emergency-btn:hover {
+  background: #b91c1c !important;
+}
+
+.access-emergency-btn strong {
+  font-size: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.access-audio-btn {
+  background: rgba(13, 148, 136, 0.25) !important;
+  color: #ffffff !important;
+  border: 1px solid #14b8a6 !important;
+  border-radius: 999px !important;
+  padding: 4px 14px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+}
+
+.access-audio-btn:hover,
+.access-audio-btn.is-speaking {
+  background: #0d9488 !important;
+  color: #ffffff !important;
+}
+
+.access-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.access-lang-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.access-lang-chip {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.access-lang-chip:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.access-lang-chip.active {
+  background: #059669;
+  color: #ffffff;
+  border-color: #10b981;
+}
+
+.access-font-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.access-font-label {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.access-size-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  width: 26px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.access-size-btn.active {
+  background: #0b8fa3;
+  color: #ffffff;
+  border-color: #16a6b6;
+}
 
 /* =====================================================
-   NAVBAR  (global, always pinned)
+   NAVBAR (global, sticky)
 ===================================================== */
-
 .main-navbar {
-  position: fixed !important;     /* <- fixed instead of sticky */
+  position: sticky !important;
   top: 0;
   left: 0;
   right: 0;
-
   width: 100%;
-
   z-index: 1200;
-
-  background: rgba(255, 255, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-
-  border-bottom: 1px solid rgba(11, 143, 163, 0.12);
-  box-shadow: 0 5px 25px rgba(7, 63, 82, 0.06);
-
+  border-bottom: 1px solid rgba(11, 143, 163, 0.16);
+  box-shadow: 0 4px 20px rgba(7, 63, 82, 0.08);
   color: var(--primary) !important;
 }
 
@@ -368,8 +496,75 @@ h2 {
   transform: translateY(-1px);
 }
 
-.nav-link:hover::after {
+.nav-link:hover::after,
+.nav-link.active::after {
   transform: scaleX(1);
+}
+
+.nav-link.active {
+  color: var(--secondary) !important;
+}
+
+.nav-link-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  line-height: 1.15;
+}
+
+.nav-link-main {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.nav-link-sub {
+  font-size: 10px;
+  color: var(--secondary);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.nav-link-highlight {
+  background: rgba(13, 148, 136, 0.12) !important;
+  border: 1.5px solid rgba(13, 148, 136, 0.35) !important;
+  border-radius: 12px !important;
+  padding: 6px 14px !important;
+}
+
+.nav-link-highlight:hover {
+  background: rgba(13, 148, 136, 0.22) !important;
+}
+
+.nav-login-btn {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  padding: 8px 18px !important;
+  border-radius: 10px !important;
+  text-transform: none !important;
+  margin-left: 8px !important;
+}
+
+.nav-login-btn:hover {
+  background: var(--primary-dark) !important;
+}
+
+.mobile-nav-item.active {
+  background: rgba(11, 143, 163, 0.14);
+  border-left: 4px solid var(--secondary);
+}
+
+.highlighted-item {
+  background: rgba(13, 148, 136, 0.1);
+  border-radius: 10px;
+}
+
+.mobile-nav-login-btn {
+  background: #073f52 !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
 }
 
 .mobile-menu-button {

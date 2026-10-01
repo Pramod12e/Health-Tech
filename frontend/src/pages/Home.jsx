@@ -1,4 +1,4 @@
-﻿import {
+import {
   Box,
   Button,
   Container,
@@ -6,9 +6,11 @@
   Card,
   CardContent,
   Grid,
+  Chip,
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  IconButton
 } from "@mui/material";
 
 import {
@@ -17,624 +19,655 @@ import {
   ExpandMore,
   HealthAndSafety,
   MedicalServices,
-  PersonSearch,
+  Healing,
+  Assignment,
+  LocalPharmacy,
+  PhoneInTalk,
+  VolumeUp,
+  StopCircle,
+  Mic,
   VideoCall,
+  CalendarMonth,
+  ReceiptLong,
+  LocationOn
 } from "@mui/icons-material";
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { getDoctors } from "../api/doctorApi";
+import { useAccessibility } from "../context/AccessibilityContext";
 import "./Home.css";
 
-const doctors = [
+// Fallback doctors in case server or DB is initializing
+const fallbackDoctors = [
   {
+    _id: "doc-f1",
     name: "Dr. Rajesh Kumar",
     specialty: "General Physician",
-    experience: "8+ Years",
-    image:
-      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=600&h=800&q=80",
+    hospital: "AIIMS Community Care Center",
+    experience: 12,
+    image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=600&h=800&q=80",
+    languages: ["Hindi", "English", "Odia"],
+    isAvailableNow: true
   },
   {
-    name: "Dr. Ananya Das",
+    _id: "doc-f2",
+    name: "Dr. Neha Patel",
     specialty: "Pediatrics",
-    experience: "6+ Years",
-    image:
-      "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=600&h=800&q=80",
+    hospital: "Care Children's Hospital",
+    experience: 10,
+    image: "https://images.unsplash.com/photo-1651008376811-b90baee60c1f?auto=format&fit=crop&w=600&h=800&q=80",
+    languages: ["Hindi", "English"],
+    isAvailableNow: true
   },
   {
-    name: "Dr. Suresh Mohanty",
-    specialty: "Cardiology",
-    experience: "15+ Years",
-    image:
-      "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=600&h=800&q=80",
+    _id: "doc-f3",
+    name: "Dr. Sandeep Mohanty",
+    specialty: "Orthopedics",
+    hospital: "AMRI Hospital",
+    experience: 15,
+    image: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=600&h=800&q=80",
+    languages: ["Odia", "Hindi", "English"],
+    isAvailableNow: false
   },
   {
-    name: "Dr. Priyanka Rout",
-    specialty: "Dermatology",
-    experience: "7+ Years",
-    image:
-      "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=600&h=800&q=80",
-  },
+    _id: "doc-f4",
+    name: "Dr. Sneha Mishra",
+    specialty: "Gynecology",
+    hospital: "KIMS Hospital",
+    experience: 11,
+    image: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&h=800&q=80",
+    languages: ["Hindi", "Odia", "English"],
+    isAvailableNow: true
+  }
 ];
 
-const services = [
+const quickSymptoms = [
   {
-    number: "01",
-    tag: "FIND A SPECIALIST",
-    icon: <PersonSearch />,
-    title: "Find care that fits your needs",
-    text: "Browse doctors by specialty, experience, and availability. Choose the right person for you or someone in your family.",
+    id: "fever",
+    icon: "🌡️",
+    name: "Fever & Chills",
+    nameHi: "बुखार और ठंड",
+    nameOr: "ଜ୍ୱର ଏବଂ ଥଣ୍ଡା",
+    specialist: "General Physician",
+    advice: "Drink plenty of water and consult a general doctor."
   },
   {
-    number: "02",
-    tag: "ONLINE CONSULTATION",
-    icon: <VideoCall />,
-    title: "Speak with a doctor from home",
-    text: "Get professional guidance without the waiting room. Connect through a simple video consultation from wherever you are.",
+    id: "headache",
+    icon: "🤕",
+    name: "Headache",
+    nameHi: "सिरदर्द व चक्कर",
+    nameOr: "ମୁଣ୍ଡବିନ୍ଧା",
+    specialist: "General Physician",
+    advice: "Rest in a quiet space and get your blood pressure checked."
   },
   {
-    number: "03",
-    tag: "HEALTH RECORDS",
-    icon: <HealthAndSafety />,
-    title: "Keep your health in one place",
-    text: "Store consultations, reports, prescriptions, and important health details so they are easier to access when you need them.",
+    id: "cough",
+    icon: "🤧",
+    name: "Cough & Cold",
+    nameHi: "खांसी और जुकाम",
+    nameOr: "କାଶ ଏବଂ ଥଣ୍ଡା",
+    specialist: "General Physician",
+    advice: "Steam inhalation and warm water gargle are recommended."
   },
   {
-    number: "04",
-    tag: "SYMPTOM CHECKER",
-    icon: <MedicalServices />,
-    title: "Explain what you are feeling",
-    text: "Describe your symptoms by typing or voice and organise the details before speaking with a doctor.",
+    id: "stomach_ache",
+    icon: "🤢",
+    name: "Stomach Ache",
+    nameHi: "पेट दर्द और उल्टी",
+    nameOr: "ପେଟ ଯନ୍ତ୍ରଣା",
+    specialist: "General Physician",
+    advice: "Avoid spicy food, drink ORS solution and consult a doctor."
   },
+  {
+    id: "knee_pain",
+    icon: "🦵",
+    name: "Joint / Knee Pain",
+    nameHi: "घुटने व जोड़ों का दर्द",
+    nameOr: "ଗଣ୍ଠି ଯନ୍ତ୍ରଣା",
+    specialist: "Orthopedics",
+    advice: "Orthopedic specialist consultation advised for joint stiffness."
+  },
+  {
+    id: "skin_rash",
+    icon: "🧴",
+    name: "Skin Itching & Rash",
+    nameHi: "त्वचा पर लाल दाने",
+    nameOr: "ଚର୍ମ କୁଣ୍ଡାଇବା",
+    specialist: "Dermatology",
+    advice: "Keep skin dry and do not scratch. Consult a skin specialist."
+  }
+];
+
+const specialtiesList = [
+  { id: "all", label: "All Doctors", labelHi: "सभी डॉक्टर", labelOr: "ସମସ୍ତ ଡାକ୍ତର", icon: "👨‍⚕️" },
+  { id: "General Physician", label: "General Physician", labelHi: "सामान्य रोग (बुखार/कमजोरी)", labelOr: "ସାଧାରଣ ରୋଗ", icon: "🩺" },
+  { id: "Pediatrics", label: "Children (Pediatrics)", labelHi: "शिशु व बाल रोग", labelOr: "ଶିଶୁ ରୋଗ", icon: "👶" },
+  { id: "Orthopedics", label: "Bones & Joints", labelHi: "हड्डी व जोड़", labelOr: "ହାଡ ଓ ଗଣ୍ଠି", icon: "🦴" },
+  { id: "Gynecology", label: "Women's Health", labelHi: "महिला रोग व प्रसूति", labelOr: "ମହିଳା ସ୍ୱାସ୍ଥ୍ୟ", icon: "🌸" },
+  { id: "Neurology", label: "Nerves & Brain", labelHi: "सिरदर्द व नसें", labelOr: "ସ୍ନାୟୁ ରୋଗ", icon: "🧠" },
+  { id: "ENT", label: "Ear, Nose, Throat", labelHi: "कान, नाक, गला", labelOr: "କାନ, ନାକ, ଗଳା", icon: "👂" }
 ];
 
 const steps = [
   {
-    number: "01",
-    title: "Make your free account",
-    text: "Register with your name and phone number. It takes only 2 minutes.",
+    number: "1",
+    icon: "🩺",
+    title: "Choose a Doctor",
+    titleHi: "डॉक्टर चुनें",
+    text: "Browse verified doctors by photo, language and specialty.",
+    textHi: "अपनी भाषा और समस्या के अनुसार डॉक्टर की फोटो देखकर चुनें।"
   },
   {
-    number: "02",
-    title: "Choose a doctor",
-    text: "See doctors by specialty and language. Pick the one you trust.",
+    number: "2",
+    icon: "⏰",
+    title: "Pick Free Time",
+    titleHi: "समय तय करें",
+    text: "Select a comfortable time slot with a single tap.",
+    textHi: "अपनी सुविधा अनुसार एक क्लिक में समय तय करें।"
   },
   {
-    number: "03",
-    title: "Book a time",
-    text: "Select a free time that works for you. Confirm with one click.",
+    number: "3",
+    icon: "📱",
+    title: "Speak on Video Call",
+    titleHi: "फोन पर बात करें",
+    text: "Talk directly to the doctor from home on your smartphone.",
+    textHi: "घर बैठे फोन या वीडियो कॉल पर डॉक्टर को अपनी बीमारी बताएं।"
   },
   {
-    number: "04",
-    title: "Talk online",
-    text: "Join the video call from your phone. Speak freely with the doctor.",
-  },
+    number: "4",
+    icon: "📄",
+    title: "Get Prescription",
+    titleHi: "पर्ची प्राप्त करें",
+    text: "Receive digital prescription with sunrise & moon medicine timings.",
+    textHi: "मोबाइल पर सूरज-चांद के चिन्ह वाली आसान पर्ची पाएं।"
+  }
 ];
 
 const faqs = [
   {
-    question: "How do I book a doctor?",
-    answer:
-      "First make a free account. Then choose a doctor, pick a time, and confirm. You will get a message with all details.",
+    question: "क्या मुझे पढ़ने-लिखने की ज्यादा जरूरत पड़ेगी? (Do I need high literacy?)",
+    questionEn: "Do I need high literacy to use this service?",
+    answer: "बिल्कुल नहीं! पूरा ऐप सरल चिन्हों, तस्वीरों और सूरज-चांद के संकेतों पर आधारित है। आप हर चीज़ को माइक का बटन दबाकर सुन भी सकते हैं और बोलकर भी बता सकते हैं।"
   },
   {
-    question: "Are the doctors real and verified?",
-    answer:
-      "Yes. Every doctor is checked and verified before they join. You can trust them.",
+    question: "डॉक्टर से बात करने के लिए क्या करना होगा? (How to consult a doctor?)",
+    questionEn: "How do I consult a doctor?",
+    answer: "बस 'डॉक्टर सूची' में जाएं, अपनी भाषा (हिंदी, उड़िया, अंग्रेजी) बोलने वाले डॉक्टर को चुनें और 'बात करें' पर दबाएं। आपके फोन पर वीडियो कॉल जुड़ जाएगी।"
   },
   {
-    question: "Can I talk in my own language?",
-    answer:
-      "Yes. Many doctors speak Hindi, Odia, and other local languages. You can choose a doctor who speaks your language.",
+    question: "दवाइयां कब खानी हैं, यह कैसे पता चलेगा? (How will I know medicine timings?)",
+    questionEn: "How will I know my medicine schedule?",
+    answer: "हमारी पर्ची में सुबह के लिए उगता सूरज 🌅, दोपहर के लिए पूरा सूरज ☀️, और रात के लिए चांद 🌙 का निशान बना होता है। आप 'पर्ची सुनें' दबाकर आवाज़ में भी सुन सकते हैं।"
   },
   {
-    question: "Is my information safe?",
-    answer:
-      "Yes. Your health details are private. Only the doctor you choose can see them.",
-  },
-  {
-    question: "What if I need to change the time?",
-    answer:
-      "You can change or cancel the appointment from your account. Please do it a few hours before the call.",
-  },
-  {
-    question: "Can I speak my problem instead of typing?",
-    answer:
-      "Yes. You can speak your symptoms. Our system will help write it clearly for the doctor.",
-  },
+    question: "क्या यह सेवा आपातकाल के लिए है? (What to do in an emergency?)",
+    questionEn: "What should I do in a medical emergency?",
+    answer: "गंभीर आपातकाल में तुरंत शीर्ष पर दिए गए लाल बटन '108' पर कॉल करें। 108 पर सरकार द्वारा मुफ्त एम्बुलेंस और आपातकालीन सहायता तुरंत मिलती है।"
+  }
 ];
 
-const heroSlides = [
-  {
-    title: "Home Treatment",
-    image:
-      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=85",
-    alt: "Healthcare professional providing care at home",
-  },
-  {
-    title: "Doctor Consultation",
-    image:
-      "https://images.unsplash.com/photo-1584982751601-97dcc096659c?auto=format&fit=crop&w=1200&q=85",
-    alt: "Doctor speaking with a patient",
-  },
-  {
-    title: "Family Healthcare",
-    image:
-      "https://images.unsplash.com/photo-1511174511562-5f7f18b874f8?auto=format&fit=crop&w=1200&q=85",
-    alt: "Family receiving healthcare support",
-  },
-  {
-    title: "Trusted Care",
-    image:
-      "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=1200&q=85",
-    alt: "Healthcare team providing professional care",
-  },
-];
-
-function Home() {
+export default function Home() {
   const navigate = useNavigate();
-  const [heroSlide, setHeroSlide] = useState(0);
+  const { lang, speak, stopSpeaking, isSpeaking } = useAccessibility();
+
+  const [doctorsList, setDoctorsList] = useState([]);
+  const [selectedSpecialty, setSelectedSpecialty] = useState("all");
+  const [activeSymptom, setActiveSymptom] = useState(null);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setHeroSlide((current) => (current + 1) % heroSlides.length);
-    }, 5000);
-
-    return () => clearInterval(timer);
+    getDoctors()
+      .then((res) => {
+        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+          setDoctorsList(res.data);
+        } else {
+          setDoctorsList(fallbackDoctors);
+        }
+      })
+      .catch(() => {
+        setDoctorsList(fallbackDoctors);
+      });
   }, []);
+
+  // Filter doctors by selected specialty
+  const filteredDoctors = selectedSpecialty === "all"
+    ? doctorsList
+    : doctorsList.filter((doc) => doc.specialty?.toLowerCase().includes(selectedSpecialty.toLowerCase()));
+
+  const handleHeroAudio = () => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak(
+        lang === "hi"
+          ? "टेलीहेल्थ ब्रिज में आपका स्वागत है। यहां आप आसानी से डॉक्टर से बात कर सकते हैं, बीमारी की जांच कर सकते हैं, और पुरानी पर्ची देख सकते हैं। नीचे दिए गए बड़े कार्ड पर क्लिक करें।"
+          : "Welcome to Telehealth Bridge. Easily consult verified doctors from home, check your symptoms, and review your prescriptions."
+      );
+    }
+  };
 
   return (
     <Box className="home-page">
+      {/* =====================================================
+          1. HERO SECTION WITH 4 GIANT ACCESSIBILITY ACTION CARDS
+      ===================================================== */}
+      <section className="home-hero-v2">
+        <Container maxWidth="xl">
+          <Box className="hero-v2-header">
+            <Box className="hero-v2-badge">
+              <HealthAndSafety sx={{ fontSize: 22, color: "#10b981" }} />
+              <span>
+                {lang === "hi" ? "सत्यापित डॉक्टर • आसान व सुरक्षित सेवा" : lang === "or" ? "ବିଶ୍ୱାସଯୋଗ୍ୟ ଡାକ୍ତର ସେବା" : "Trusted Healthcare From Home"}
+              </span>
+            </Box>
+
+            <Typography component="h1" className="hero-v2-title">
+              {lang === "hi" ? (
+                <>
+                  घर बैठे डॉक्टर से बात करें,
+                  <span> पूरी तरह आसान।</span>
+                </>
+              ) : lang === "or" ? (
+                <>
+                  ଘରେ ବସି ଡାକ୍ତରଙ୍କ ସହ କଥା ହୁଅନ୍ତୁ,
+                  <span> ସହଜ ଓ ସରଳ।</span>
+                </>
+              ) : (
+                <>
+                  Healthcare Made Simple,
+                  <span> for Every Family.</span>
+                </>
+              )}
+            </Typography>
+
+            <Typography className="hero-v2-desc">
+              {lang === "hi"
+                ? "शहर जाने की जरूरत नहीं। अपनी भाषा में डॉक्टर से सलाह लें, बीमारी के लक्षण समझें और पुरानी पर्चियां एक जगह पाएं।"
+                : "No long travels to the city. Consult verified doctors in your language, check symptoms easily, and access prescriptions anytime."}
+            </Typography>
+
+            {/* Read Aloud Hero Button */}
+            <Box sx={{ mt: 2, mb: 4 }}>
+              <Button
+                variant="outlined"
+                onClick={handleHeroAudio}
+                className={`hero-audio-btn ${isSpeaking ? "is-speaking" : ""}`}
+                startIcon={isSpeaking ? <StopCircle /> : <VolumeUp />}
+              >
+                {isSpeaking ? (lang === "hi" ? "आवाज़ रोकें" : "Stop Audio") : (lang === "hi" ? "🔊 पूरी जानकारी आवाज़ में सुनें" : "🔊 Listen to Guide")}
+              </Button>
+            </Box>
+          </Box>
+
+          {/* =====================================================
+              THE 4 ESSENTIAL ACTION TILES (PROMINENTLY SIZED)
+          ===================================================== */}
+          <Box className="essential-actions-container">
+            <Typography variant="subtitle2" className="actions-section-label">
+              ⭐ {lang === "hi" ? "मुख्य सुविधाएं (Tap to open feature):" : "Essential Quick Actions:"}
+            </Typography>
+
+            <Grid container spacing={2.5}>
+              {/* Card 1: Find Doctor */}
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+                <button
+                  type="button"
+                  className="essential-action-tile tile-doctor"
+                  onClick={() => {
+                    document.getElementById("doctors-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  <Box className="tile-icon-wrap icon-doctor">
+                    <MedicalServices sx={{ fontSize: 38 }} />
+                  </Box>
+                  <Box className="tile-text-wrap">
+                    <Typography className="tile-title">
+                      {lang === "hi" ? "1. डॉक्टर सूची देखें" : "1. Find Doctors"}
+                    </Typography>
+                    <Typography className="tile-sub">
+                      {lang === "hi" ? "विशेषज्ञ डॉक्टर व परामर्श" : "Verified Specialists Online"}
+                    </Typography>
+                    <span className="tile-action-chip">
+                      {lang === "hi" ? "डॉक्टर देखें ➡️" : "Browse Doctors ➡️"}
+                    </span>
+                  </Box>
+                </button>
+              </Grid>
+
+              {/* Card 2: Symptom Checker */}
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+                <button
+                  type="button"
+                  className="essential-action-tile tile-symptom highlighted-tile"
+                  onClick={() => navigate("/symptom-checker")}
+                >
+                  <Box className="tile-icon-wrap icon-symptom">
+                    <Healing sx={{ fontSize: 38 }} />
+                  </Box>
+                  <Box className="tile-text-wrap">
+                    <Typography className="tile-title">
+                      {lang === "hi" ? "2. बीमारी जांचें" : "2. Symptom Checker"}
+                    </Typography>
+                    <Typography className="tile-sub">
+                      {lang === "hi" ? "बोलकर या चुनकर समझें" : "Check by Voice or Touch"}
+                    </Typography>
+                    <span className="tile-action-chip action-pulse">
+                      {lang === "hi" ? "जांच शुरू करें ➡️" : "Start Check ➡️"}
+                    </span>
+                  </Box>
+                </button>
+              </Grid>
+
+              {/* Card 3: Patient History */}
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+                <button
+                  type="button"
+                  className="essential-action-tile tile-history"
+                  onClick={() => navigate("/patient-history")}
+                >
+                  <Box className="tile-icon-wrap icon-history">
+                    <Assignment sx={{ fontSize: 38 }} />
+                  </Box>
+                  <Box className="tile-text-wrap">
+                    <Typography className="tile-title">
+                      {lang === "hi" ? "3. पुरानी पर्ची व इतिहास" : "3. Patient History"}
+                    </Typography>
+                    <Typography className="tile-sub">
+                      {lang === "hi" ? "दवाइयों का समय व रिकॉर्ड" : "Prescriptions & Timings"}
+                    </Typography>
+                    <span className="tile-action-chip">
+                      {lang === "hi" ? "पर्ची देखें ➡️" : "View Records ➡️"}
+                    </span>
+                  </Box>
+                </button>
+              </Grid>
+
+              {/* Card 4: Pharmacies */}
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+                <button
+                  type="button"
+                  className="essential-action-tile tile-pharmacy"
+                  onClick={() => navigate("/pharmacies")}
+                >
+                  <Box className="tile-icon-wrap icon-pharmacy">
+                    <LocalPharmacy sx={{ fontSize: 38 }} />
+                  </Box>
+                  <Box className="tile-text-wrap">
+                    <Typography className="tile-title">
+                      {lang === "hi" ? "4. दवा दुकान खोजें" : "4. Find Medicines"}
+                    </Typography>
+                    <Typography className="tile-sub">
+                      {lang === "hi" ? "नजदीकी मेडिकल स्टोर" : "Nearby Pharmacies"}
+                    </Typography>
+                    <span className="tile-action-chip">
+                      {lang === "hi" ? "दवा खोजें ➡️" : "Search Store ➡️"}
+                    </span>
+                  </Box>
+                </button>
+              </Grid>
+            </Grid>
+          </Box>
+        </Container>
+      </section>
 
       {/* =====================================================
-          HERO SECTION  (contains stats bar at bottom)
+          2. SYMPTOM CHECKER SPOTLIGHT (PROMINENTLY SIZED & PLACED)
       ===================================================== */}
-
-      <section className="home-hero">
-
-        {/* Hospital background */}
-        <div className="hero-background-image" />
-
-        {/* Dark teal overlay */}
-        <div className="hero-background-overlay" />
-
-        <Container maxWidth="xl" className="hero-container">
-
-          <Grid
-            container
-            className="hero-grid"
-            alignItems="center"
-          >
-
-            {/* =================================================
-                LEFT CONTENT
-            ================================================= */}
-
-            <Grid size={{ xs: 12, md: 6 }}>
-
-              <Box className="hero-content">
-
-                {/* Trust badge */}
-
-                <Box className="hero-eyebrow">
-                  <CheckCircle />
-
-                  <span>
-                    Trusted Healthcare From Home
-                  </span>
+      <section className="symptom-spotlight-section">
+        <Container maxWidth="xl">
+          <Card className="symptom-spotlight-card" elevation={3}>
+            <CardContent sx={{ p: { xs: 3, md: 5 } }}>
+              <Box className="spotlight-top">
+                <Box>
+                  <Box className="spotlight-eyebrow">
+                    <Healing sx={{ fontSize: 18 }} />
+                    <span>{lang === "hi" ? "1 मिनट में स्वास्थ्य जांच" : "Instant Health Check"}</span>
+                  </Box>
+                  <Typography variant="h3" className="spotlight-title">
+                    {lang === "hi" ? "क्या तकलीफ महसूस हो रही है?" : "What symptoms are you feeling?"}
+                  </Typography>
+                  <Typography className="spotlight-sub">
+                    {lang === "hi"
+                      ? "नीचे दिए गए किसी भी लक्षण पर टैप करें या पूरा लक्षण जांचने के लिए मुख्य पृष्ठ पर जाएं।"
+                      : "Tap a common symptom below to see quick guidance, or open the full voice-assisted checker."}
+                  </Typography>
                 </Box>
 
-                {/* Heading */}
-
-                <Typography
-                  component="h1"
-                  className="hero-title"
-                >
-                  Good Doctors
-                  <span>
-                    Close to Your Family
-                  </span>
-                </Typography>
-
-                {/* Description */}
-
-                <Typography className="hero-description">
-                  Talk to real doctors from your home.
-                  No long travel. Safe, simple and made
-                  for every family in India.
-                </Typography>
-
-                {/* Trust points */}
-
-                <Box className="hero-trust">
-
-                  <Box className="hero-trust-item">
-                    <CheckCircle />
-                    <span>Verified Doctors</span>
-                  </Box>
-
-                  <Box className="hero-trust-item">
-                    <CheckCircle />
-                    <span>Private &amp; Secure</span>
-                  </Box>
-
-                  <Box className="hero-trust-item">
-                    <CheckCircle />
-                    <span>Video Consultation</span>
-                  </Box>
-
-                </Box>
-
-                {/* Buttons */}
-
-                <Box className="hero-buttons">
-
+                {/* Primary Button to Full View */}
+                <Box className="spotlight-btn-group">
                   <Button
                     variant="contained"
-                    className="hero-primary-btn"
-                    onClick={() => navigate("/doctors")}
+                    size="large"
+                    className="open-full-checker-btn"
+                    onClick={() => navigate("/symptom-checker")}
                     endIcon={<ArrowForward />}
                   >
-                    Find a Doctor
+                    {lang === "hi" ? "पूरा लक्षण जांच खोलें (बोलकर बताएं)" : "Open Full Symptom Checker"}
                   </Button>
-
-                  <Button
-                    variant="outlined"
-                    className="hero-secondary-btn"
-                    onClick={() => {
-                      document
-                        .getElementById("how-it-works")
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                        });
-                    }}
-                  >
-                    How It Works
-                  </Button>
-
-                </Box>
-
-              </Box>
-
-            </Grid>
-
-            {/* =================================================
-                RIGHT DOCTOR / CAROUSEL
-            ================================================= */}
-
-            <Grid size={{ xs: 12, md: 6 }}>
-
-              <Box className="hero-doctor-area">
-                <Box className="hero-carousel">
-                  {heroSlides.map((slide, index) => (
-                    <img
-                      key={slide.title}
-                      src={slide.image}
-                      alt={slide.alt}
-                      className={`hero-carousel-image ${
-                        index === heroSlide ? "is-active" : ""
-                      }`}
-                    />
-                  ))}
-
-                  <Box className="hero-carousel-top">
-                    <Box className="hero-carousel-label">
-                      <span className="hero-carousel-dot" />
-                      {heroSlides[heroSlide].title}
-                    </Box>
-
-                    <Box className="hero-carousel-dots">
-                      {heroSlides.map((slide, index) => (
-                        <button
-                          key={slide.title}
-                          type="button"
-                          aria-label={`Show ${slide.title}`}
-                          aria-current={index === heroSlide ? "true" : undefined}
-                          className={`hero-carousel-dot-button ${
-                            index === heroSlide ? "is-active" : ""
-                          }`}
-                          onClick={() => setHeroSlide(index)}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-
-                  <Box className="hero-carousel-bottom">
-                    <Box className="hero-carousel-copy">
-                      <strong>{heroSlides[heroSlide].title}</strong>
-                      <span>Trusted healthcare for you and your family.</span>
-                    </Box>
-
-                    <Box className="hero-carousel-progress">
-                      <span
-                        key={heroSlide}
-                        style={{
-                          animationDuration: "5000ms",
-                        }}
-                      />
-                    </Box>
-                  </Box>
                 </Box>
               </Box>
 
-            </Grid>
+              {/* 6 Visual Quick-Touch Symptom Tiles */}
+              <Box className="quick-symptoms-grid">
+                {quickSymptoms.map((sym) => {
+                  const isActive = activeSymptom?.id === sym.id;
+                  return (
+                    <button
+                      key={sym.id}
+                      type="button"
+                      className={`quick-sym-chip ${isActive ? "active" : ""}`}
+                      onClick={() => setActiveSymptom(sym)}
+                    >
+                      <span className="sym-chip-emoji">{sym.icon}</span>
+                      <span className="sym-chip-text">
+                        {lang === "hi" ? sym.nameHi : lang === "or" ? sym.nameOr : sym.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </Box>
 
-          </Grid>
+              {/* Live interactive preview banner if symptom clicked */}
+              {activeSymptom && (
+                <Box className="spotlight-preview-banner">
+                  <Box className="preview-info">
+                    <span className="preview-icon">{activeSymptom.icon}</span>
+                    <Box>
+                      <Typography className="preview-title">
+                        {lang === "hi" ? activeSymptom.nameHi : activeSymptom.name}
+                      </Typography>
+                      <Typography className="preview-advice">
+                        💡 {activeSymptom.advice}
+                      </Typography>
+                      <Typography className="preview-doc-note">
+                        🩺 <strong>{lang === "hi" ? "सुझाए गए विशेषज्ञ:" : "Recommended Specialist:"}</strong> {activeSymptom.specialist}
+                      </Typography>
+                    </Box>
+                  </Box>
 
-        </Container>
-
-        {/* =====================================================
-            HERO STATS BAR  (inside hero, pinned to bottom)
-        ===================================================== */}
-
-        <div className="hero-stats-bar">
-          <Container maxWidth="xl">
-            <Grid container className="hero-stats-grid">
-
-              <Grid size={{ xs: 6, md: 3 }}>
-                <Box className="hero-stat-item">
-                  <Typography className="hero-stat-number">
-                    10+
-                  </Typography>
-                  <Typography className="hero-stat-label">
-                    Types of Doctors
-                  </Typography>
+                  <Box className="preview-action">
+                    <Button
+                      variant="contained"
+                      className="preview-doc-btn"
+                      onClick={() => navigate(`/doctors?specialty=${encodeURIComponent(activeSymptom.specialist)}`)}
+                      endIcon={<ArrowForward />}
+                    >
+                      {lang === "hi" ? `${activeSymptom.specialist} खोजें` : `Find ${activeSymptom.specialist}`}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() => navigate(`/symptom-checker?symptom=${activeSymptom.id}`)}
+                      sx={{ textTransform: "none", fontWeight: 700 }}
+                    >
+                      {lang === "hi" ? "विस्तार से जांचें" : "Detailed Check"}
+                    </Button>
+                  </Box>
                 </Box>
-              </Grid>
-
-              <Grid size={{ xs: 6, md: 3 }}>
-                <Box className="hero-stat-item">
-                  <Typography className="hero-stat-number">
-                    350+
-                  </Typography>
-                  <Typography className="hero-stat-label">
-                    Verified Doctors
-                  </Typography>
-                </Box>
-              </Grid>
-
-              <Grid size={{ xs: 6, md: 3 }}>
-                <Box className="hero-stat-item">
-                  <Typography className="hero-stat-number">
-                    24/7
-                  </Typography>
-                  <Typography className="hero-stat-label">
-                    Always Available
-                  </Typography>
-                </Box>
-              </Grid>
-
-              <Grid size={{ xs: 6, md: 3 }}>
-                <Box className="hero-stat-item">
-                  <Typography className="hero-stat-number">
-                    100%
-                  </Typography>
-                  <Typography className="hero-stat-label">
-                    Made for Families
-                  </Typography>
-                </Box>
-              </Grid>
-
-            </Grid>
-          </Container>
-        </div>
-
-      </section>
-
-      {/* =====================================================
-          SERVICES
-      ===================================================== */}
-
-      <section className="services-section">
-        <Container maxWidth="xl">
-          <div className="services-heading">
-            <Typography className="services-eyebrow">
-              CARE THAT COMES TO YOU
-            </Typography>
-            <Typography component="h6" className="services-title">
-              Everyday healthcare,
-              <span>made simpler.</span>
-            </Typography>
-            <Typography className="services-description">
-              From choosing a doctor to staying connected with your care,
-              Swasthya Saathi keeps the important things close and easy to use.
-            </Typography>
-          </div>
-
-          <div className="services-grid">
-            {services.map((service, index) => (
-              <Card
-                className={`service-card ${
-                  index === 0 ? "service-card-featured" : ""
-                }`}
-                key={service.title}
-              >
-                <CardContent className="service-card-content">
-                  <div className="service-card-header">
-                    <div className="service-icon">{service.icon}</div>
-                    <span className="service-number">{service.number}</span>
-                  </div>
-
-                  <span className="service-tag">{service.tag}</span>
-
-                  <Typography component="h3" className="service-title">
-                    {service.title}
-                  </Typography>
-
-                  <Typography className="service-text">
-                    {service.text}
-                  </Typography>
-
-                  <Button
-                    className="service-link"
-                    onClick={() => navigate("/doctors")}
-                    endIcon={<ArrowForward />}
-                  >
-                    Explore care
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="services-bottom-note">
-            <div className="services-note-icon">
-              <CheckCircle />
-            </div>
-            <div className="services-note-copy">
-              <strong>Built around your family</strong>
-              <span>Simple tools, human doctors, less healthcare hassle.</span>
-            </div>
-            <div className="services-note-stats">
-              <div className="services-note-stat">
-                <strong>4</strong>
-                <span>Core services</span>
-              </div>
-              <div className="services-note-stat">
-                <strong>24/7</strong>
-                <span>Access to care</span>
-              </div>
-              <div className="services-note-stat">
-                <strong>14+</strong>
-                <span>Cities supported</span>
-              </div>
-            </div>
-          </div>
+              )}
+            </CardContent>
+          </Card>
         </Container>
       </section>
 
       {/* =====================================================
-          DOCTORS SECTION
+          3. DOCTORS LIST SECTION (FRONT & CENTER, WELL PLACED)
       ===================================================== */}
-
-      <section className="doctors-section">
-
+      <section className="doctors-section-v2" id="doctors-section">
         <Container maxWidth="xl">
-
-          <Box className="doctors-heading">
-
-            <Box className="doctors-heading-content">
-
-              <Typography className="section-eyebrow">
-                OUR DOCTORS
+          <Box className="doctors-section-header">
+            <Box>
+              <Box className="section-eyebrow-pill">
+                <MedicalServices sx={{ fontSize: 18 }} />
+                <span>{lang === "hi" ? "हमारे सत्यापित चिकित्सक" : "Verified Medical Experts"}</span>
+              </Box>
+              <Typography component="h2" className="doctors-main-title">
+                {lang === "hi" ? "अनुभवी डॉक्टरों से परामर्श लें" : "Consult Experienced Doctors"}
               </Typography>
-
-              <Typography
-                component="h2"
-                className="section-title"
-              >
-                Meet our trusted doctors.
+              <Typography className="doctors-main-desc">
+                {lang === "hi"
+                  ? "सभी डॉक्टर सरकार द्वारा सत्यापित हैं। अपनी भाषा बोलने वाले डॉक्टर को चुनें और तुरंत वीडियो पर बात करें।"
+                  : "All doctors are background-verified. Choose based on language and hospital experience."}
               </Typography>
-
-              <Typography className="section-description">
-                Experienced healthcare professionals ready to
-                provide trusted care whenever you need it.
-              </Typography>
-
             </Box>
 
             <Button
-              className="view-doctors-btn"
+              variant="outlined"
+              size="large"
+              className="view-all-docs-btn"
               onClick={() => navigate("/doctors")}
               endIcon={<ArrowForward />}
             >
-              See all doctors
+              {lang === "hi" ? "सभी डॉक्टर देखें (All Doctors)" : "See All Doctors"}
             </Button>
-
           </Box>
 
-          <Grid
-            container
-            spacing={3}
-            className="doctors-grid"
-          >
+          {/* Specialty Filter Buttons with Visual Icons */}
+          <Box className="specialty-filter-bar">
+            {specialtiesList.map((spec) => {
+              const isSelected = selectedSpecialty === spec.id;
+              return (
+                <button
+                  key={spec.id}
+                  type="button"
+                  className={`specialty-pill-btn ${isSelected ? "selected" : ""}`}
+                  onClick={() => setSelectedSpecialty(spec.id)}
+                >
+                  <span className="spec-pill-icon">{spec.icon}</span>
+                  <span className="spec-pill-text">
+                    {lang === "hi" ? spec.labelHi : lang === "or" ? spec.labelOr : spec.label}
+                  </span>
+                </button>
+              );
+            })}
+          </Box>
 
-            {doctors.slice(0, 4).map((doctor) => (
-
-              <Grid
-                size={{
-                  xs: 12,
-                  sm: 6,
-                  md: 3,
-                }}
-                key={doctor.name}
-              >
-
-                <Card className="doctor-home-card">
-
-                  <Box className="doctor-image-wrapper">
-
+          {/* Grid of Doctor Cards */}
+          <Grid container spacing={3} className="doctor-cards-grid">
+            {filteredDoctors.slice(0, 8).map((doc) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={doc._id}>
+                <Card className="accessible-doctor-card" elevation={2}>
+                  {/* Doctor Image & Availability */}
+                  <Box className="doc-card-image-wrap">
                     <img
-                      src={doctor.image}
-                      alt={doctor.name}
+                      src={doc.image || "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=500&q=80"}
+                      alt={doc.name}
                       loading="lazy"
                     />
-
+                    <Box className={`doc-avail-badge ${doc.isAvailableNow !== false ? "online" : "offline"}`}>
+                      <span className="avail-dot" />
+                      <span>
+                        {doc.isAvailableNow !== false
+                          ? (lang === "hi" ? "आज उपलब्ध" : "Available Today")
+                          : (lang === "hi" ? "अपॉइंटमेंट आवश्यक" : "By Appointment")}
+                      </span>
+                    </Box>
                   </Box>
 
-                  <CardContent className="doctor-card-content">
-
-                    <Typography className="doctor-name">
-                      {doctor.name}
+                  <CardContent className="doc-card-content">
+                    <Typography className="doc-card-name">
+                      {doc.name}
                     </Typography>
 
-                    <Typography className="doctor-specialty">
-                      {doctor.specialty}
+                    <Typography className="doc-card-specialty">
+                      🩺 {doc.specialty}
                     </Typography>
 
-                    <Typography className="doctor-experience">
-                      {doctor.experience} experience
+                    <Typography className="doc-card-hospital">
+                      <LocationOn fontSize="inherit" sx={{ mr: 0.5, verticalAlign: "middle", color: "var(--accent)" }} />
+                      {doc.hospital || "Community Healthcare Center"}
                     </Typography>
 
-                    <Button
-                      className="doctor-details-btn"
-                      onClick={() => navigate("/doctors")}
-                    >
-                      View Profile
-                    </Button>
+                    <Box className="doc-card-experience">
+                      ⏱️ {doc.experience} {lang === "hi" ? "वर्ष का अनुभव" : "Years Experience"}
+                    </Box>
 
+                    {/* Languages Spoken Chips */}
+                    <Box className="doc-languages-box">
+                      <span className="lang-label">{lang === "hi" ? "भाषाएं:" : "Speaks:"}</span>
+                      {(doc.languages || ["Hindi", "English"]).map((l) => (
+                        <span key={l} className="lang-tag">{l}</span>
+                      ))}
+                    </Box>
+
+                    {/* Action Buttons */}
+                    <Box className="doc-card-actions">
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        className="doc-book-btn"
+                        onClick={() => navigate(`/doctors/${doc._id}`)}
+                        startIcon={<VideoCall />}
+                      >
+                        {lang === "hi" ? "बात करें / बुक करें" : "Book Call"}
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        className="doc-details-btn"
+                        onClick={() => navigate(`/doctors/${doc._id}`)}
+                      >
+                        {lang === "hi" ? "विवरण देखें" : "View Profile"}
+                      </Button>
+                    </Box>
                   </CardContent>
-
                 </Card>
-
               </Grid>
-
             ))}
-
           </Grid>
-
         </Container>
-
       </section>
 
       {/* =====================================================
-          HOW IT WORKS
+          4. HOW IT WORKS (SIMPLE PICTORIAL 4 STEPS)
       ===================================================== */}
-
-      <section className="how-section" id="how-it-works">
+      <section className="how-it-works-v2" id="how-it-works">
         <Container maxWidth="xl">
-          <Box className="how-header">
-            <Typography className="how-eyebrow">
-              HOW IT WORKS
+          <Box className="how-header-v2">
+            <Box className="section-eyebrow-pill">
+              <CheckCircle sx={{ fontSize: 18 }} />
+              <span>{lang === "hi" ? "४ आसान चरण" : "4 Simple Steps"}</span>
+            </Box>
+            <Typography component="h2" className="how-title-v2">
+              {lang === "hi" ? "डॉक्टर से मिलने का बेहद आसान तरीका" : "How to Consult a Doctor"}
             </Typography>
-            <Typography component="h2" className="how-title">
-              Four easy steps to talk to a doctor.
+            <Typography className="how-desc-v2">
+              {lang === "hi"
+                ? "किसी भी तकनीकी ज्ञान की आवश्यकता नहीं। सिर्फ ४ आसान चरणों में इलाज शुरू करें।"
+                : "No complex digital knowledge required. Get medical care in 4 easy steps."}
             </Typography>
           </Box>
 
-          <Grid container spacing={3} className="how-grid">
+          <Grid container spacing={3} className="how-steps-grid">
             {steps.map((step) => (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={step.number}>
-                <Box className="step-card">
-                  <Box className="step-top-line" />
-                  <Typography className="step-number">
-                    {step.number}
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={step.number}>
+                <Box className="accessible-step-card">
+                  <Box className="step-number-bubble">{step.number}</Box>
+                  <Box className="step-icon-large">{step.icon}</Box>
+                  <Typography className="step-card-title">
+                    {lang === "hi" ? step.titleHi : step.title}
                   </Typography>
-                  <Typography className="step-title">
-                    {step.title}
-                  </Typography>
-                  <Typography className="step-text">
-                    {step.text}
+                  <Typography className="step-card-text">
+                    {lang === "hi" ? step.textHi : step.text}
                   </Typography>
                 </Box>
               </Grid>
@@ -644,103 +677,68 @@ function Home() {
       </section>
 
       {/* =====================================================
-          PATIENT STORIES
+          5. EMERGENCY CALLOUT RIBBON (108 HELPLINE)
       ===================================================== */}
-
-      <section className="stories-section">
-        <Container maxWidth="xl">
-          <Box className="stories-header">
-            <Typography className="stories-eyebrow">
-              WHAT FAMILIES SAY
-            </Typography>
-            <Typography className="stories-description">
-              Real people from towns and villages sharing how
-              Telehealth Bridge helped their family.
-            </Typography>
+      <section className="emergency-ribbon-section">
+        <Container maxWidth="lg">
+          <Box className="emergency-ribbon-card">
+            <Box className="emergency-ribbon-icon">
+              <PhoneInTalk sx={{ fontSize: 48, color: "#ffffff" }} />
+            </Box>
+            <Box className="emergency-ribbon-info">
+              <Typography variant="h5" sx={{ fontWeight: 800, color: "#ffffff" }}>
+                {lang === "hi" ? "गंभीर आपातकाल? तुरंत 108 पर कॉल करें" : "Medical Emergency? Dial 108 Immediately"}
+              </Typography>
+              <Typography sx={{ color: "rgba(255, 255, 255, 0.9)", mt: 0.5, fontSize: "15px" }}>
+                {lang === "hi"
+                  ? "सरकारी 108 हेल्पलाइन पर मुफ्त एम्बुलेंस और 24 घंटे आपातकालीन सहायता मिलती है।"
+                  : "Free 24/7 government emergency medical and ambulance dispatch service."}
+              </Typography>
+            </Box>
+            <Button
+              href="tel:108"
+              variant="contained"
+              className="emergency-ribbon-btn"
+              startIcon={<PhoneInTalk />}
+            >
+              {lang === "hi" ? "108 पर डायल करें" : "Call 108 Now"}
+            </Button>
           </Box>
-
-          <Grid container spacing={3} className="stories-grid">
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Box className="story-card">
-                <Box className="story-top-line" />
-                <Box className="story-avatar">A</Box>
-                <Typography className="story-text">
-                  "I could talk to a good doctor without going to the city.
-                  It saved time and money for my whole family."
-                </Typography>
-                <Typography className="story-name">
-                  Anjali, Mother of two
-                </Typography>
-              </Box>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Box className="story-card">
-                <Box className="story-top-line" />
-                <Box className="story-avatar">R</Box>
-                <Typography className="story-text">
-                  "The doctor spoke in Odia. I understood everything clearly.
-                  Now I feel more confident about my health."
-                </Typography>
-                <Typography className="story-name">
-                  Ramesh, Farmer
-                </Typography>
-              </Box>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Box className="story-card">
-                <Box className="story-top-line" />
-                <Box className="story-avatar">S</Box>
-                <Typography className="story-text">
-                  "Booking was simple even on slow internet.
-                  My parents got help without leaving home."
-                </Typography>
-                <Typography className="story-name">
-                  Suman, College student
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
         </Container>
       </section>
 
       {/* =====================================================
-          FAQ
+          6. COMMON QUESTIONS (FAQ WITH SIMPLE ANSWERS)
       ===================================================== */}
-
-      <section className="faq-section">
-        <Container maxWidth="lg">
-          <Box className="section-heading centered-heading">
-            <Typography className="section-eyebrow">
-              COMMON QUESTIONS
+      <section className="faq-section-v2">
+        <Container maxWidth="md">
+          <Box className="faq-header-v2">
+            <Typography className="section-eyebrow-pill">
+              <span>{lang === "hi" ? "अक्सर पूछे जाने वाले सवाल" : "Frequently Asked Questions"}</span>
             </Typography>
-            <Typography component="h2" className="section-title">
-              Simple answers for you.
-            </Typography>
-            <Typography className="section-description">
-              Clear answers about booking, doctors, language and safety.
+            <Typography component="h2" className="faq-title-v2">
+              {lang === "hi" ? "आपके सभी सवालों के सीधे जवाब" : "Clear Answers to Common Questions"}
             </Typography>
           </Box>
 
-          <Box className="faq-list">
+          <Box className="faq-accordion-wrap">
             {faqs.map((faq, index) => (
               <Accordion
                 key={index}
-                className="faq-item"
+                className="accessible-faq-item"
                 disableGutters
                 elevation={0}
               >
                 <AccordionSummary
-                  expandIcon={<ExpandMore />}
-                  className="faq-question-wrap"
+                  expandIcon={<ExpandMore sx={{ color: "var(--primary)" }} />}
+                  className="faq-summary"
                 >
-                  <Typography className="faq-question">
-                    {faq.question}
+                  <Typography className="faq-q-text">
+                    {lang === "hi" ? faq.question : faq.questionEn}
                   </Typography>
                 </AccordionSummary>
-                <AccordionDetails className="faq-answer-wrap">
-                  <Typography className="faq-answer">
+                <AccordionDetails className="faq-details">
+                  <Typography className="faq-a-text">
                     {faq.answer}
                   </Typography>
                 </AccordionDetails>
@@ -752,5 +750,3 @@ function Home() {
     </Box>
   );
 }
-
-export default Home;
