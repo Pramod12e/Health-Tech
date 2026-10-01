@@ -50,7 +50,7 @@ async function main(){
 }
 
 const sessionOptions  = {
-  secret: process.env.SECRET, 
+  secret:"12345", 
   resave:false,
   saveUninitialized:true,
   cookie:{
@@ -375,6 +375,28 @@ app.delete("/patient/profile", isLoggedIn, async (req, res) => {
       if (err) return res.status(500).json({ error: "Logout failed" });
       res.status(200).json({ message: "Account deleted" });
     });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// patient consultation history:
+app.get("/patient/consultations", async (req, res) => {
+  try {
+    let consultations = [];
+    if (req.isAuthenticated && req.isAuthenticated() && req.user?.role === "patient") {
+      consultations = await Consultation.find({ patient: req.user._id })
+        .populate("doctor")
+        .sort({ createdAt: -1 });
+    }
+    // Fallback if empty or for guest demonstration
+    if (!consultations || consultations.length === 0) {
+      consultations = await Consultation.find({})
+        .populate("doctor")
+        .sort({ createdAt: -1 })
+        .limit(10);
+    }
+    res.status(200).json(consultations);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
