@@ -44,6 +44,7 @@ function Navbar() {
     menuItems.push({ label: "My Appointments", path: "/doctor/appointments" });
   }
   if (user?.role === "patient") {
+    menuItems.push({ label: "Symptom Checker", path: "/symptom-checker" });
     menuItems.push({ label: "My Consultations", path: "/my-consultations" });
   }
 

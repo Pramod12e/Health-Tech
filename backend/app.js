@@ -589,3 +589,53 @@ app.put("/consultations/:id/prescription", isLoggedIn, async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+
+//====================================================
+// SYMPTOM CHECKER
+//====================================================
+
+// Emergency keywords -> always force High urgency, no matter what AI says later
+const EMERGENCY_KEYWORDS = [
+  "chest pain", "difficulty breathing", "breathless", "unconscious",
+  "severe bleeding", "seizure", "stroke", "paralysis", "suicidal",
+  "no pulse", "not breathing", "blue lips", "severe burn"
+];
+
+app.post("/symptom-check", isLoggedIn, async (req, res) => {
+  try {
+    if (req.user.role !== "patient") return res.status(403).json({ error: "Not authorized" });
+
+    const { symptoms } = req.body; // array of strings, e.g. ["Fever", "Cough", "chest pain"]
+    if (!symptoms || symptoms.length === 0) {
+      return res.status(400).json({ error: "Please select at least one symptom" });
+    }
+
+    const text = symptoms.join(" ").toLowerCase();
+    const isEmergency = EMERGENCY_KEYWORDS.some((k) => text.includes(k));
+
+    // TODO: replace this mock block with Tusar's real AI API call
+    let possibleCondition = "General illness - consult a doctor for accurate diagnosis";
+    let urgencyLevel = "low";
+    let confidence = 0.5;
+
+    if (symptoms.length >= 3) {
+      urgencyLevel = "medium";
+      confidence = 0.65;
+    }
+    if (isEmergency) {
+      possibleCondition = "Potential medical emergency";
+      urgencyLevel = "high";
+      confidence = 0.95;
+    }
+
+    res.status(200).json({
+      possibleCondition,
+      urgencyLevel,       // "low" | "medium" | "high"
+      confidence,
+      forcedByRule: isEmergency  // true if our safety rule overrode the AI
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});

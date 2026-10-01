@@ -15,6 +15,7 @@ import PharmacyListing from "./pages/PharmacyListing";
 import PharmacyDetail from "./pages/PharmacyDetail";
 import MyAppointments from "./pages/MyAppointments";
 import MyConsultations from "./pages/MyConsultations";
+import SymptomChecker from "./pages/SymptomChecker";
 
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
@@ -57,6 +58,11 @@ function App() {
           <Route path="/pharmacy/medicine" element={
             <ProtectedRoute allowedRoles={["pharmacy"]}><ManageMedicine /></ProtectedRoute>
           } />
+
+          <Route path="/symptom-checker" element={
+            <ProtectedRoute allowedRoles={["patient"]}><SymptomChecker /></ProtectedRoute>
+          } />
+          
         </Routes>
         <Footer />
         <ToastContainer />

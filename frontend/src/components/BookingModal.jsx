@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 function BookingModal({ open, onClose, doctor }) {
   const [date, setDate] = useState("");
   const [slot, setSlot] = useState("");
-  const [symptoms, setSymptoms] = useState("");
+  const [symptoms, setSymptoms] = useState(sessionStorage.getItem("pendingSymptoms") || "");
 
   const handleBook = async () => {
     if (!date || !slot) {
@@ -16,6 +16,8 @@ function BookingModal({ open, onClose, doctor }) {
     try {
       await bookConsultation({ doctorId: doctor._id, date, slot, symptoms });
       toast.success("Consultation booked!");
+      sessionStorage.removeItem("pendingSymptoms");
+      sessionStorage.removeItem("pendingUrgency");
       onClose();
     } catch (err) {
       toast.error("Booking failed");
