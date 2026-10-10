@@ -1,4 +1,5 @@
-# Telehealth Bridge
+# Health Tech
+
 
 A telehealth platform for underserved rural areas. It connects patients with doctors and pharmacies, and is designed for weak-connectivity conditions.
 
