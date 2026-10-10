@@ -109,7 +109,7 @@ const sessionOptions = {
   },
 };
 
-
+console.log("isProd:", isProd);  
 
 app.use(cors({ 
   origin: process.env.FRONTEND_URL || "http://localhost:5173",   // no trailing slash
