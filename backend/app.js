@@ -31,6 +31,7 @@ app.use(methodOverride("_method"));
 
 app.set("view engine","ejs");
 app.set("views", path.join(__dirname,"/views"));
+app.set("trust proxy", 1);
 
 const Patient = require("./models/patient.js");
 const Doctor = require("./models/doctor.js");
@@ -41,10 +42,12 @@ let io;
 
 const dbUrl = "mongodb://127.0.0.1:27017/Health-Tech";
 main()
-.then(()=>{
+.then(async()=>{
+    
+
     const server = http.createServer(app);
     io = new Server(server, {
-      cors: { origin: "http://localhost:5173", credentials: true }
+      cors: { origin: process.env.FRONTEND_URL || "http://localhost:5173", credentials: true }
     });
 
     io.on("connection", (socket) => {
@@ -82,8 +85,16 @@ main()
     });
 }).catch(err => console.log(err));
 async function main(){
-    await mongoose.connect(dbUrl);
+    await mongoose.connect(process.env.ATLASDB_URL);
 }
+
+const isProd = process.env.NODE_ENV === "production";
+
+const store = MongoStore.create({
+  mongoUrl: process.env.ATLASDB_URL,
+  touchAfter: 24 * 3600,
+});
+store.on("error", (e) => console.log("SESSION STORE ERROR", e));
 
 const sessionOptions  = {
   secret: process.env.SECRET, 
@@ -93,12 +104,13 @@ const sessionOptions  = {
       expires:Date.now() + 7*24*60*60*1000,
       maxAge: 7*24*60*60*1000,
       httpOnly:true,
-      sameSite: "lax"
+      secure: isProd,                      // https only in production
+      sameSite: isProd ? "none" : "lax",   // needed because frontend and backend are on different domains
   }
 }
 
 app.use(cors({ 
-  origin: "http://localhost:5173",   // no trailing slash
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",   // no trailing slash
   credentials: true 
 }));
 app.use(session(sessionOptions));

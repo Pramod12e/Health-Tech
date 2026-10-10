@@ -3,6 +3,7 @@ import { io as ioClient } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogTitle, DialogContent, Button, Box, Typography } from "@mui/material";
+import { BACKEND_URL } from "../api/axiosClient";
 
 const CallContext = createContext();
 
@@ -34,7 +35,7 @@ export function CallProvider({ children }) {
   useEffect(() => {
     if (!user) return;
 
-    const socket = ioClient("http://localhost:5000", { withCredentials: true });
+    const socket = ioClient(BACKEND_URL, { withCredentials: true });
     socketRef.current = socket;
     socket.emit("register-user", user.userId);
     console.log("Registered as user:", user.userId);

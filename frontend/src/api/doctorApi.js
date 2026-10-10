@@ -1,4 +1,3 @@
-import axios from "axios";
+import axiosClient from "./axiosClient";
 
-export const getDoctors = () => 
-  axios.get("http://localhost:5000/doctors");
+export const getDoctors = () => axiosClient.get("/doctors");

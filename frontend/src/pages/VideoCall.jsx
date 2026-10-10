@@ -10,6 +10,7 @@ import CallEndIcon from "@mui/icons-material/CallEnd";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import { endCall } from "../api/consultationApi";
+import { BACKEND_URL } from "../api/axiosClient";
 
 const ICE_SERVERS = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
@@ -37,7 +38,7 @@ function VideoCall() {
     let pc;
 
     const init = async () => {
-      socket = io("http://localhost:5000", { withCredentials: true });
+      socket = io(BACKEND_URL, { withCredentials: true });
       socketRef.current = socket;
 
       pc = new RTCPeerConnection(ICE_SERVERS);
