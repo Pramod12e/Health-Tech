@@ -1,4 +1,5 @@
-﻿import {
+﻿
+import {
   Box,
   Button,
   Container,
@@ -23,156 +24,89 @@ import {
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useTranslation } from "react-i18next";
 import "./Home.css";
 
 const doctors = [
   {
     name: "Dr. Rajesh Kumar",
-    specialty: "General Physician",
-    experience: "8+ Years",
+    specialtyKey: "doctorSpecialty1",
+    experience: "8+",
     image:
       "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=600&h=800&q=80",
   },
   {
     name: "Dr. Ananya Das",
-    specialty: "Pediatrics",
-    experience: "6+ Years",
+    specialtyKey: "doctorSpecialty2",
+    experience: "6+",
     image:
       "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=600&h=800&q=80",
   },
   {
     name: "Dr. Suresh Mohanty",
-    specialty: "Cardiology",
-    experience: "15+ Years",
+    specialtyKey: "doctorSpecialty3",
+    experience: "15+",
     image:
       "https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=600&h=800&q=80",
   },
   {
     name: "Dr. Priyanka Rout",
-    specialty: "Dermatology",
-    experience: "7+ Years",
+    specialtyKey: "doctorSpecialty4",
+    experience: "7+",
     image:
       "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=600&h=800&q=80",
   },
 ];
 
 const services = [
-  {
-    number: "01",
-    tag: "FIND A SPECIALIST",
-    icon: <PersonSearch />,
-    title: "Find care that fits your needs",
-    text: "Browse doctors by specialty, experience, and availability. Choose the right person for you or someone in your family.",
-  },
-  {
-    number: "02",
-    tag: "ONLINE CONSULTATION",
-    icon: <VideoCall />,
-    title: "Speak with a doctor from home",
-    text: "Get professional guidance without the waiting room. Connect through a simple video consultation from wherever you are.",
-  },
-  {
-    number: "03",
-    tag: "HEALTH RECORDS",
-    icon: <HealthAndSafety />,
-    title: "Keep your health in one place",
-    text: "Store consultations, reports, prescriptions, and important health details so they are easier to access when you need them.",
-  },
-  {
-    number: "04",
-    tag: "SYMPTOM CHECKER",
-    icon: <MedicalServices />,
-    title: "Explain what you are feeling",
-    text: "Describe your symptoms by typing or voice and organise the details before speaking with a doctor.",
-  },
+  { number: "01", tagKey: "serviceTag1", icon: <PersonSearch />, titleKey: "serviceTitle1", textKey: "serviceText1" },
+  { number: "02", tagKey: "serviceTag2", icon: <VideoCall />, titleKey: "serviceTitle2", textKey: "serviceText2" },
+  { number: "03", tagKey: "serviceTag3", icon: <HealthAndSafety />, titleKey: "serviceTitle3", textKey: "serviceText3" },
+  { number: "04", tagKey: "serviceTag4", icon: <MedicalServices />, titleKey: "serviceTitle4", textKey: "serviceText4" },
 ];
 
 const steps = [
-  {
-    number: "01",
-    title: "Make your free account",
-    text: "Register with your name and phone number. It takes only 2 minutes.",
-  },
-  {
-    number: "02",
-    title: "Choose a doctor",
-    text: "See doctors by specialty and language. Pick the one you trust.",
-  },
-  {
-    number: "03",
-    title: "Book a time",
-    text: "Select a free time that works for you. Confirm with one click.",
-  },
-  {
-    number: "04",
-    title: "Talk online",
-    text: "Join the video call from your phone. Speak freely with the doctor.",
-  },
+  { number: "01", titleKey: "stepTitle1", textKey: "stepText1" },
+  { number: "02", titleKey: "stepTitle2", textKey: "stepText2" },
+  { number: "03", titleKey: "stepTitle3", textKey: "stepText3" },
+  { number: "04", titleKey: "stepTitle4", textKey: "stepText4" },
 ];
 
 const faqs = [
-  {
-    question: "How do I book a doctor?",
-    answer:
-      "First make a free account. Then choose a doctor, pick a time, and confirm. You will get a message with all details.",
-  },
-  {
-    question: "Are the doctors real and verified?",
-    answer:
-      "Yes. Every doctor is checked and verified before they join. You can trust them.",
-  },
-  {
-    question: "Can I talk in my own language?",
-    answer:
-      "Yes. Many doctors speak Hindi, Odia, and other local languages. You can choose a doctor who speaks your language.",
-  },
-  {
-    question: "Is my information safe?",
-    answer:
-      "Yes. Your health details are private. Only the doctor you choose can see them.",
-  },
-  {
-    question: "What if I need to change the time?",
-    answer:
-      "You can change or cancel the appointment from your account. Please do it a few hours before the call.",
-  },
-  {
-    question: "Can I speak my problem instead of typing?",
-    answer:
-      "Yes. You can speak your symptoms. Our system will help write it clearly for the doctor.",
-  },
+  { questionKey: "faqQuestion1", answerKey: "faqAnswer1" },
+  { questionKey: "faqQuestion2", answerKey: "faqAnswer2" },
+  { questionKey: "faqQuestion3", answerKey: "faqAnswer3" },
+  { questionKey: "faqQuestion4", answerKey: "faqAnswer4" },
+  { questionKey: "faqQuestion5", answerKey: "faqAnswer5" },
+  { questionKey: "faqQuestion6", answerKey: "faqAnswer6" },
 ];
 
 const heroSlides = [
   {
-    title: "Home Treatment",
-    image:
-      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=85",
-    alt: "Healthcare professional providing care at home",
+    titleKey: "heroSlide1",
+    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=85",
+    altKey: "heroAlt1",
   },
   {
-    title: "Doctor Consultation",
-    image:
-      "https://images.unsplash.com/photo-1584982751601-97dcc096659c?auto=format&fit=crop&w=1200&q=85",
-    alt: "Doctor speaking with a patient",
+    titleKey: "heroSlide2",
+    image: "https://images.unsplash.com/photo-1584982751601-97dcc096659c?auto=format&fit=crop&w=1200&q=85",
+    altKey: "heroAlt2",
   },
   {
-    title: "Family Healthcare",
-    image:
-      "https://images.unsplash.com/photo-1511174511562-5f7f18b874f8?auto=format&fit=crop&w=1200&q=85",
-    alt: "Family receiving healthcare support",
+    titleKey: "heroSlide3",
+    image: "https://images.unsplash.com/photo-1511174511562-5f7f18b874f8?auto=format&fit=crop&w=1200&q=85",
+    altKey: "heroAlt3",
   },
   {
-    title: "Trusted Care",
-    image:
-      "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=1200&q=85",
-    alt: "Healthcare team providing professional care",
+    titleKey: "heroSlide4",
+    image: "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=1200&q=85",
+    altKey: "heroAlt4",
   },
 ];
 
 function Home() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [heroSlide, setHeroSlide] = useState(0);
 
   useEffect(() => {
@@ -185,132 +119,77 @@ function Home() {
 
   return (
     <Box className="home-page">
-
-      {/* =====================================================
-          HERO SECTION  (contains stats bar at bottom)
-      ===================================================== */}
-
+      {/* HERO SECTION */}
       <section className="home-hero">
-
-        {/* Hospital background */}
         <div className="hero-background-image" />
-
-        {/* Dark teal overlay */}
         <div className="hero-background-overlay" />
 
         <Container maxWidth="xl" className="hero-container">
-
-          <Grid
-            container
-            className="hero-grid"
-            alignItems="center"
-          >
-
-            {/* =================================================
-                LEFT CONTENT
-            ================================================= */}
-
+          <Grid container className="hero-grid" alignItems="center">
             <Grid size={{ xs: 12, md: 6 }}>
-
               <Box className="hero-content">
-
-                {/* Trust badge */}
-
                 <Box className="hero-eyebrow">
                   <CheckCircle />
-
-                  <span>
-                    Trusted Healthcare From Home
-                  </span>
+                  <span>{t("trustedHealthcareFromHome")}</span>
                 </Box>
 
-                {/* Heading */}
-
-                <Typography
-                  component="h1"
-                  className="hero-title"
-                >
-                  Good Doctors
-                  <span>
-                    Close to Your Family
-                  </span>
+                <Typography component="h1" className="hero-title">
+                  {t("goodDoctor")}
+                  <span>{t("CloseToFamily")}</span>
                 </Typography>
-
-                {/* Description */}
 
                 <Typography className="hero-description">
-                  Talk to real doctors from your home.
-                  No long travel. Safe, simple and made
-                  for every family in India.
+                  {t("descLing")}
                 </Typography>
 
-                {/* Trust points */}
-
                 <Box className="hero-trust">
-
                   <Box className="hero-trust-item">
                     <CheckCircle />
-                    <span>Verified Doctors</span>
+                    <span>{t("verifiedDoctors")}</span>
                   </Box>
-
                   <Box className="hero-trust-item">
                     <CheckCircle />
-                    <span>Private &amp; Secure</span>
+                    <span>{t("privateSecure")}</span>
                   </Box>
-
                   <Box className="hero-trust-item">
                     <CheckCircle />
-                    <span>Video Consultation</span>
+                    <span>{t("videoConsultation")}</span>
                   </Box>
-
                 </Box>
 
-                {/* Buttons */}
-
                 <Box className="hero-buttons">
-
                   <Button
                     variant="contained"
                     className="hero-primary-btn"
                     onClick={() => navigate("/doctors")}
                     endIcon={<ArrowForward />}
                   >
-                    Find a Doctor
+                    {t("findDoctor")}
                   </Button>
 
                   <Button
                     variant="outlined"
                     className="hero-secondary-btn"
-                    onClick={() => {
+                    onClick={() =>
                       document
                         .getElementById("how-it-works")
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                        });
-                    }}
+                        ?.scrollIntoView({ behavior: "smooth" })
+                    }
                   >
-                    How It Works
+                    {t("howItWorks")}
                   </Button>
-
                 </Box>
-
               </Box>
-
             </Grid>
 
-            {/* =================================================
-                RIGHT DOCTOR / CAROUSEL
-            ================================================= */}
-
             <Grid size={{ xs: 12, md: 6 }}>
-
               <Box className="hero-doctor-area">
                 <Box className="hero-carousel">
                   {heroSlides.map((slide, index) => (
                     <img
-                      key={slide.title}
+                      key={slide.titleKey}
                       src={slide.image}
-                      alt={slide.alt}
+                      alt={t(slide.altKey)}
                       className={`hero-carousel-image ${
                         index === heroSlide ? "is-active" : ""
                       }`}
@@ -320,16 +199,20 @@ function Home() {
                   <Box className="hero-carousel-top">
                     <Box className="hero-carousel-label">
                       <span className="hero-carousel-dot" />
-                      {heroSlides[heroSlide].title}
+                      {t(heroSlides[heroSlide].titleKey)}
                     </Box>
 
                     <Box className="hero-carousel-dots">
                       {heroSlides.map((slide, index) => (
                         <button
-                          key={slide.title}
+                          key={slide.titleKey}
                           type="button"
-                          aria-label={`Show ${slide.title}`}
-                          aria-current={index === heroSlide ? "true" : undefined}
+                          aria-label={t("showSlide", {
+                            title: t(slide.titleKey),
+                          })}
+                          aria-current={
+                            index === heroSlide ? "true" : undefined
+                          }
                           className={`hero-carousel-dot-button ${
                             index === heroSlide ? "is-active" : ""
                           }`}
@@ -341,103 +224,82 @@ function Home() {
 
                   <Box className="hero-carousel-bottom">
                     <Box className="hero-carousel-copy">
-                      <strong>{heroSlides[heroSlide].title}</strong>
-                      <span>Trusted healthcare for you and your family.</span>
+                      <strong>{t(heroSlides[heroSlide].titleKey)}</strong>
+                      <span>{t("carouselFamilyCopy")}</span>
                     </Box>
 
                     <Box className="hero-carousel-progress">
                       <span
                         key={heroSlide}
-                        style={{
-                          animationDuration: "5000ms",
-                        }}
+                        style={{ animationDuration: "5000ms" }}
                       />
                     </Box>
                   </Box>
                 </Box>
               </Box>
-
             </Grid>
-
           </Grid>
-
         </Container>
 
-        {/* =====================================================
-            HERO STATS BAR  (inside hero, pinned to bottom)
-        ===================================================== */}
-
+        {/* HERO STATISTICS */}
         <div className="hero-stats-bar">
           <Container maxWidth="xl">
             <Grid container className="hero-stats-grid">
-
               <Grid size={{ xs: 6, md: 3 }}>
                 <Box className="hero-stat-item">
-                  <Typography className="hero-stat-number">
-                    10+
-                  </Typography>
+                  <Typography className="hero-stat-number">10+</Typography>
                   <Typography className="hero-stat-label">
-                    Types of Doctors
+                    {t("typesOfDoctors")}
                   </Typography>
                 </Box>
               </Grid>
 
               <Grid size={{ xs: 6, md: 3 }}>
                 <Box className="hero-stat-item">
-                  <Typography className="hero-stat-number">
-                    350+
-                  </Typography>
+                  <Typography className="hero-stat-number">350+</Typography>
                   <Typography className="hero-stat-label">
-                    Verified Doctors
+                    {t("verifiedDoctors")}
                   </Typography>
                 </Box>
               </Grid>
 
               <Grid size={{ xs: 6, md: 3 }}>
                 <Box className="hero-stat-item">
-                  <Typography className="hero-stat-number">
-                    24/7
-                  </Typography>
+                  <Typography className="hero-stat-number">24/7</Typography>
                   <Typography className="hero-stat-label">
-                    Always Available
+                    {t("alwaysAvailable")}
                   </Typography>
                 </Box>
               </Grid>
 
               <Grid size={{ xs: 6, md: 3 }}>
                 <Box className="hero-stat-item">
-                  <Typography className="hero-stat-number">
-                    100%
-                  </Typography>
+                  <Typography className="hero-stat-number">100%</Typography>
                   <Typography className="hero-stat-label">
-                    Made for Families
+                    {t("madeForFamilies")}
                   </Typography>
                 </Box>
               </Grid>
-
             </Grid>
           </Container>
         </div>
-
       </section>
 
-      {/* =====================================================
-          SERVICES
-      ===================================================== */}
-
+      {/* SERVICES SECTION */}
       <section className="services-section">
         <Container maxWidth="xl">
           <div className="services-heading">
             <Typography className="services-eyebrow">
-              CARE THAT COMES TO YOU
+              {t("careThatComesToYou")}
             </Typography>
-            <Typography component="h6" className="services-title">
-              Everyday healthcare,
-              <span>made simpler.</span>
+
+            <Typography component="h2" className="services-title">
+              {t("everydayHealthcare")}
+              <span>{t("madeSimpler")}</span>
             </Typography>
+
             <Typography className="services-description">
-              From choosing a doctor to staying connected with your care,
-              Swasthya Saathi keeps the important things close and easy to use.
+              {t("servicesDescription")}
             </Typography>
           </div>
 
@@ -447,7 +309,7 @@ function Home() {
                 className={`service-card ${
                   index === 0 ? "service-card-featured" : ""
                 }`}
-                key={service.title}
+                key={service.titleKey}
               >
                 <CardContent className="service-card-content">
                   <div className="service-card-header">
@@ -455,14 +317,14 @@ function Home() {
                     <span className="service-number">{service.number}</span>
                   </div>
 
-                  <span className="service-tag">{service.tag}</span>
+                  <span className="service-tag">{t(service.tagKey)}</span>
 
                   <Typography component="h3" className="service-title">
-                    {service.title}
+                    {t(service.titleKey)}
                   </Typography>
 
                   <Typography className="service-text">
-                    {service.text}
+                    {t(service.textKey)}
                   </Typography>
 
                   <Button
@@ -470,7 +332,7 @@ function Home() {
                     onClick={() => navigate("/doctors")}
                     endIcon={<ArrowForward />}
                   >
-                    Explore care
+                    {t("exploreCare")}
                   </Button>
                 </CardContent>
               </Card>
@@ -481,56 +343,47 @@ function Home() {
             <div className="services-note-icon">
               <CheckCircle />
             </div>
+
             <div className="services-note-copy">
-              <strong>Built around your family</strong>
-              <span>Simple tools, human doctors, less healthcare hassle.</span>
+              <strong>{t("builtAroundFamily")}</strong>
+              <span>{t("familyNote")}</span>
             </div>
+
             <div className="services-note-stats">
               <div className="services-note-stat">
                 <strong>4</strong>
-                <span>Core services</span>
+                <span>{t("coreServices")}</span>
               </div>
               <div className="services-note-stat">
                 <strong>24/7</strong>
-                <span>Access to care</span>
+                <span>{t("accessToCare")}</span>
               </div>
               <div className="services-note-stat">
                 <strong>14+</strong>
-                <span>Cities supported</span>
+                <span>{t("citiesSupported")}</span>
               </div>
             </div>
           </div>
         </Container>
       </section>
 
-      {/* =====================================================
-          DOCTORS SECTION
-      ===================================================== */}
-
+      {/* DOCTORS SECTION */}
       <section className="doctors-section">
-
         <Container maxWidth="xl">
-
           <Box className="doctors-heading">
-
             <Box className="doctors-heading-content">
-
               <Typography className="section-eyebrow">
-                OUR DOCTORS
+                {t("ourDoctors")}
               </Typography>
 
-              <Typography
-                component="h2"
-                className="section-title"
-              >
-                Meet our trusted doctors.
+              <Typography component="h2" className="section-title">
+                {t("meetTrustedDoctors")}
               </Typography>
 
               <Typography className="section-description">
-                Experienced healthcare professionals ready to
-                provide trusted care whenever you need it.
+                {t("doctorSectionDescription1")}{" "}
+                {t("doctorSectionDescription2")}
               </Typography>
-
             </Box>
 
             <Button
@@ -538,103 +391,86 @@ function Home() {
               onClick={() => navigate("/doctors")}
               endIcon={<ArrowForward />}
             >
-              See all doctors
+              {t("seeAllDoctors")}
             </Button>
-
           </Box>
 
-          <Grid
-            container
-            spacing={3}
-            className="doctors-grid"
-          >
-
-            {doctors.slice(0, 4).map((doctor) => (
-
+          <Grid container spacing={3} className="doctors-grid">
+            {doctors.map((doctor) => (
               <Grid
-                size={{
-                  xs: 12,
-                  sm: 6,
-                  md: 3,
-                }}
+                size={{ xs: 12, sm: 6, md: 3 }}
                 key={doctor.name}
               >
-
                 <Card className="doctor-home-card">
-
                   <Box className="doctor-image-wrapper">
-
                     <img
                       src={doctor.image}
                       alt={doctor.name}
                       loading="lazy"
                     />
-
                   </Box>
 
                   <CardContent className="doctor-card-content">
-
                     <Typography className="doctor-name">
                       {doctor.name}
                     </Typography>
 
                     <Typography className="doctor-specialty">
-                      {doctor.specialty}
+                      {t(doctor.specialtyKey)}
                     </Typography>
 
                     <Typography className="doctor-experience">
-                      {doctor.experience} experience
+                      {t("yearsExperience", {
+                        years: doctor.experience,
+                      })}
                     </Typography>
 
                     <Button
                       className="doctor-details-btn"
                       onClick={() => navigate("/doctors")}
                     >
-                      View Profile
+                      {t("viewProfile")}
                     </Button>
-
                   </CardContent>
-
                 </Card>
-
               </Grid>
-
             ))}
-
           </Grid>
-
         </Container>
-
       </section>
 
-      {/* =====================================================
-          HOW IT WORKS
-      ===================================================== */}
-
+      {/* HOW IT WORKS */}
       <section className="how-section" id="how-it-works">
         <Container maxWidth="xl">
           <Box className="how-header">
             <Typography className="how-eyebrow">
-              HOW IT WORKS
+              {t("howItWorks")}
             </Typography>
+
             <Typography component="h2" className="how-title">
-              Four easy steps to talk to a doctor.
+              {t("fourSteps")}
             </Typography>
           </Box>
 
           <Grid container spacing={3} className="how-grid">
             {steps.map((step) => (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={step.number}>
+              <Grid
+                size={{ xs: 12, sm: 6, md: 3 }}
+                key={step.number}
+              >
                 <Box className="step-card">
                   <Box className="step-top-line" />
+
                   <Typography className="step-number">
                     {step.number}
                   </Typography>
+
                   <Typography className="step-title">
-                    {step.title}
+                    {t(step.titleKey)}
                   </Typography>
+
                   <Typography className="step-text">
-                    {step.text}
+                    {t(step.textKey)}
                   </Typography>
                 </Box>
               </Grid>
@@ -643,19 +479,17 @@ function Home() {
         </Container>
       </section>
 
-      {/* =====================================================
-          PATIENT STORIES
-      ===================================================== */}
-
+      {/* PATIENT STORIES */}
       <section className="stories-section">
         <Container maxWidth="xl">
           <Box className="stories-header">
             <Typography className="stories-eyebrow">
-              WHAT FAMILIES SAY
+              {t("whatFamiliesSay")}
             </Typography>
+
             <Typography className="stories-description">
-              Real people from towns and villages sharing how
-              Telehealth Bridge helped their family.
+              {t("storiesDescription1")}{" "}
+              {t("storiesDescription2")}
             </Typography>
           </Box>
 
@@ -665,11 +499,10 @@ function Home() {
                 <Box className="story-top-line" />
                 <Box className="story-avatar">A</Box>
                 <Typography className="story-text">
-                  "I could talk to a good doctor without going to the city.
-                  It saved time and money for my whole family."
+                  {t("story1Text")}
                 </Typography>
                 <Typography className="story-name">
-                  Anjali, Mother of two
+                  {t("story1Name")}
                 </Typography>
               </Box>
             </Grid>
@@ -679,11 +512,10 @@ function Home() {
                 <Box className="story-top-line" />
                 <Box className="story-avatar">R</Box>
                 <Typography className="story-text">
-                  "The doctor spoke in Odia. I understood everything clearly.
-                  Now I feel more confident about my health."
+                  {t("story2Text")}
                 </Typography>
                 <Typography className="story-name">
-                  Ramesh, Farmer
+                  {t("story2Name")}
                 </Typography>
               </Box>
             </Grid>
@@ -693,11 +525,10 @@ function Home() {
                 <Box className="story-top-line" />
                 <Box className="story-avatar">S</Box>
                 <Typography className="story-text">
-                  "Booking was simple even on slow internet.
-                  My parents got help without leaving home."
+                  {t("story3Text")}
                 </Typography>
                 <Typography className="story-name">
-                  Suman, College student
+                  {t("story3Name")}
                 </Typography>
               </Box>
             </Grid>
@@ -705,21 +536,20 @@ function Home() {
         </Container>
       </section>
 
-      {/* =====================================================
-          FAQ
-      ===================================================== */}
-
+      {/* FAQ SECTION */}
       <section className="faq-section">
         <Container maxWidth="lg">
           <Box className="section-heading centered-heading">
             <Typography className="section-eyebrow">
-              COMMON QUESTIONS
+              {t("commonQuestions")}
             </Typography>
+
             <Typography component="h2" className="section-title">
-              Simple answers for you.
+              {t("simpleAnswers")}
             </Typography>
+
             <Typography className="section-description">
-              Clear answers about booking, doctors, language and safety.
+              {t("faqIntro")}
             </Typography>
           </Box>
 
@@ -736,12 +566,13 @@ function Home() {
                   className="faq-question-wrap"
                 >
                   <Typography className="faq-question">
-                    {faq.question}
+                    {t(faq.questionKey)}
                   </Typography>
                 </AccordionSummary>
+
                 <AccordionDetails className="faq-answer-wrap">
                   <Typography className="faq-answer">
-                    {faq.answer}
+                    {t(faq.answerKey)}
                   </Typography>
                 </AccordionDetails>
               </Accordion>

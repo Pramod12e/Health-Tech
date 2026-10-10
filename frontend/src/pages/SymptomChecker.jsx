@@ -3,6 +3,7 @@ import { Container, Paper, Typography, Checkbox, FormControlLabel, Button, TextF
 import { checkSymptoms } from "../api/symptomApi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { queueRequest } from "../offline/db";
 
 const COMMON_SYMPTOMS = [
   "Fever", "Cough", "Headache", "Body pain", "Fatigue",
@@ -31,11 +32,23 @@ function SymptomChecker() {
       toast.error("Please select at least one symptom");
       return;
     }
+
     try {
       const res = await checkSymptoms(allSymptoms);
       setResult({ ...res.data, symptomsText: allSymptoms.join(", ") });
     } catch (err) {
-      toast.error("Could not check symptoms. Try again.");
+      if (!navigator.onLine) {
+        // no internet — save locally instead of losing the data
+        await queueRequest({
+          url: "/symptom-check",
+          method: "post",
+          data: { symptoms: allSymptoms },
+          type: "symptom-check",
+        });
+        toast.info("No internet — your symptoms are saved and will be checked automatically once you're back online.");
+      } else {
+        toast.error("Could not check symptoms. Try again.");
+      }
     }
   };
 

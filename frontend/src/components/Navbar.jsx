@@ -21,8 +21,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { deleteProfile } from "../api/profileApi";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "./LanguageSwitcher";
+import SyncIndicator from "./SyncIndicator";
 
 function Navbar() {
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
 
   const [open, setOpen] = useState(false);
@@ -32,9 +36,9 @@ function Navbar() {
   const navigate = useNavigate();
 
   const menuItems = [
-    { label: "Home", path: "/" },
-    { label: "Doctors", path: "/doctors" },
-    { label: "Pharmacies", path: "/pharmacies" },
+    { label: t("home"), path: "/" },
+    { label: t("doctors"), path: "/doctors" },
+    { label: t("pharmacies"), path: "/pharmacies" },
   ];
   
   if (user?.role === "pharmacy") {
@@ -107,16 +111,11 @@ function Navbar() {
           </Box>
 
           <Box className="brand-text">
-            <Typography className="brand-name">
-              Telehealth
-            </Typography>
-
-            <Typography className="brand-subtitle">
-              Bridge
-            </Typography>
+            <Typography className="brand-name">Telehealth</Typography>
+            <Typography className="brand-subtitle">Bridge</Typography>
           </Box>
         </Box>
-
+        
 
         {/* =================================================
             MOBILE
@@ -124,12 +123,16 @@ function Navbar() {
 
         {isMobile ? (
           <>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <SyncIndicator />
+            <LanguageSwitcher />
             <IconButton
               className="mobile-menu-button"
               onClick={() => setOpen(true)}
             >
               <MenuIcon />
             </IconButton>
+          </Box>
 
             <Drawer
               anchor="right"
@@ -172,13 +175,8 @@ function Navbar() {
                 {/* Login */}
 
                 {!user && (
-                  <ListItem
-                    component={Link}
-                    to="/login"
-                    onClick={() => setOpen(false)}
-                    className="mobile-nav-item"
-                  >
-                    <ListItemText primary="Login" />
+                  <ListItem component={Link} to="/login" onClick={() => setOpen(false)} className="mobile-nav-item">
+                    <ListItemText primary={t("login")} />
                   </ListItem>
                 )}
 
@@ -193,7 +191,7 @@ function Navbar() {
                       onClick={() => setOpen(false)}
                       className="mobile-nav-item"
                     >
-                      <ListItemText primary="My Profile" />
+                      <ListItemText primary={t("myProfile")} />
                     </ListItem>
 
                     <ListItem
@@ -202,7 +200,7 @@ function Navbar() {
                       onClick={() => setOpen(false)}
                       className="mobile-nav-item"
                     >
-                      <ListItemText primary="Edit Profile" />
+                      <ListItemText primary={t("editProfile")} />
                     </ListItem>
 
                     <ListItem
@@ -212,7 +210,7 @@ function Navbar() {
                       }}
                       className="mobile-nav-item delete-item"
                     >
-                      <ListItemText primary="Delete Account" />
+                      <ListItemText primary={t("deleteAccount")} />
                     </ListItem>
 
                     <ListItem
@@ -248,8 +246,9 @@ function Navbar() {
                 {item.label}
               </Button>
             ))}
-
-
+            
+            <SyncIndicator />
+            <LanguageSwitcher />
             {/* Login */}
 
             {!user && (
@@ -258,7 +257,7 @@ function Navbar() {
                 to="/login"
                 className="nav-link"
               >
-                Login
+                {t("login")}
               </Button>
             )}
 
@@ -306,7 +305,7 @@ function Navbar() {
                   </MenuItem>
 
                   <MenuItem onClick={handleLogout}>
-                    Logout
+                    {t("logout")}
                   </MenuItem>
                 </Menu>
               </>
@@ -314,7 +313,6 @@ function Navbar() {
 
           </Box>
         )}
-
       </Toolbar>
     </AppBar>
   );

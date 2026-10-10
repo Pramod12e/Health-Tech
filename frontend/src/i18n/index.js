@@ -1,0 +1,21 @@
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+
+import en from "./locales/en.json";
+import hi from "./locales/hi.json";
+import or from "./locales/or.json";
+
+i18n
+  .use(initReactI18next)
+  .init({
+    resources: {
+      en: { translation: en },
+      hi: { translation: hi },
+      or: { translation: or }
+    },
+    lng: "en",            // default language on first load
+    fallbackLng: "en",    // if a key is missing in the chosen language, fall back to English
+    interpolation: { escapeValue: false }
+  });
+
+export default i18n;

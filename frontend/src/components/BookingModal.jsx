@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogTitle, DialogContent, TextField, Button, MenuItem } from "@mui/material";
 import { bookConsultation } from "../api/consultationApi";
 import { toast } from "react-toastify";
+import { queueRequest } from "../offline/db";
 
 function BookingModal({ open, onClose, doctor }) {
   const [date, setDate] = useState("");
@@ -13,17 +14,30 @@ function BookingModal({ open, onClose, doctor }) {
       toast.error("Please pick date and time slot");
       return;
     }
+
+    const payload = { doctorId: doctor._id, date, slot, symptoms };
+
     try {
-      await bookConsultation({ doctorId: doctor._id, date, slot, symptoms });
+      await bookConsultation(payload);
       toast.success("Consultation booked!");
       sessionStorage.removeItem("pendingSymptoms");
       sessionStorage.removeItem("pendingUrgency");
       onClose();
     } catch (err) {
-      toast.error("Booking failed");
+      if (!navigator.onLine) {
+        await queueRequest({
+          url: "/consultations",
+          method: "post",
+          data: payload,
+          type: "booking",
+        });
+        toast.info("No internet — your booking is saved and will go through automatically once you're online.");
+        onClose();
+      } else {
+        toast.error("Booking failed");
+      }
     }
   };
-
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle>Book with {doctor.name}</DialogTitle>

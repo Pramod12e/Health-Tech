@@ -16,6 +16,8 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const { isLoggedIn } = require("./middleware.js");
 const Fuse = require("fuse.js");
+const http = require("http");
+const { Server } = require("socket.io");
 
 
 const port = 5000;
@@ -35,15 +37,49 @@ const Doctor = require("./models/doctor.js");
 const Pharmacy = require("./models/pharmacy.js");
 const User = require("./models/user.js");
 const Consultation = require("./models/consultation.js");
+let io;
 
 const dbUrl = "mongodb://127.0.0.1:27017/Health-Tech";
 main()
 .then(()=>{
-    console.log("connection sucessfull");
+    const server = http.createServer(app);
+    io = new Server(server, {
+      cors: { origin: "http://localhost:5173", credentials: true }
+    });
 
-    app.listen(port,()=>{
-    console.log(`app is listening on port ${port}`);
-})
+    io.on("connection", (socket) => {
+      socket.on("register-user", (userId) => {
+        socket.join(`user-${userId}`); // personal room, so we can ring this exact person
+      });
+
+      socket.on("join-room", (roomId) => {
+        socket.join(roomId);
+        socket.to(roomId).emit("user-joined", socket.id);
+      });
+
+      socket.on("offer", ({ roomId, offer }) => {
+        socket.to(roomId).emit("offer", { offer, from: socket.id });
+      });
+
+      socket.on("answer", ({ roomId, answer }) => {
+        socket.to(roomId).emit("answer", { answer, from: socket.id });
+      });
+
+      socket.on("ice-candidate", ({ roomId, candidate }) => {
+        socket.to(roomId).emit("ice-candidate", { candidate, from: socket.id });
+      });
+
+      socket.on("leave-room", (roomId) => {
+        socket.to(roomId).emit("user-left", socket.id);
+        socket.leave(roomId);
+      });
+
+      socket.on("disconnect", () => {});
+    });
+
+    server.listen(port, () => {
+      console.log(`app is listening on port ${port}`);
+    });
 }).catch(err => console.log(err));
 async function main(){
     await mongoose.connect(dbUrl);
@@ -534,6 +570,7 @@ app.put("/consultations/:id/status", isLoggedIn, async (req, res) => {
   }
 });
 
+
 // DOCTOR - start video call
 app.post("/consultations/:id/start-call", isLoggedIn, async (req, res) => {
   try {
@@ -548,6 +585,14 @@ app.post("/consultations/:id/start-call", isLoggedIn, async (req, res) => {
 
     const doctorProfile = await Doctor.findOne({ user: req.user._id });
     await Doctor.findByIdAndUpdate(doctorProfile._id, { isAvailableNow: false });
+
+    // RING the patient in real-time
+    console.log("Ringing user:", `user-${consultation.patient}`);
+    io.to(`user-${consultation.patient}`).emit("incoming-call", {
+      roomId,
+      consultationId: consultation._id,
+      doctorName: doctorProfile.name
+    });
 
     res.status(200).json(consultation);
   } catch (e) {

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { getPatientConsultations } from "../api/consultationApi";
 import { Container, Typography, Paper, Box, Chip, Avatar, Button } from "@mui/material";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
 
 const STATUS_COLOR = {
   pending: "warning",
@@ -21,6 +23,7 @@ const STATUS_LABEL = {
 
 function MyConsultations() {
   const [list, setList] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     getPatientConsultations()
@@ -29,8 +32,9 @@ function MyConsultations() {
   }, []);
 
   const handleJoinCall = (consultation) => {
-    // placeholder — later this opens your WebRTC call screen using consultation.roomId
-    toast.info(`Joining call (room: ${consultation.roomId})`);
+    navigate(`/call/${consultation.roomId}`, {
+      state: { consultationId: consultation._id, role: "patient" }
+    });
   };
 
   if (list.length === 0) {

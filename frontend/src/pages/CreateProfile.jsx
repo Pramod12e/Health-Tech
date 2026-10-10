@@ -1,231 +1,202 @@
 import { useState } from "react";
-import { createProfile } from "../api/profileApi";
-import { useAuth } from "../context/AuthContext";
-import { Container, Paper, Typography, TextField, Button, Box, IconButton, MenuItem } from "@mui/material";
+import { Container, TextField, Button, Typography, Paper, MenuItem, Box, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useAuth } from "../context/AuthContext";
+import { createProfile } from "../api/profileApi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
+const LANGUAGES = ["English", "Hindi", "Odia", "Bengali", "Telugu", "Tamil"];
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const LANGUAGES_LIST = ["English", "Hindi", "Odia", "Bengali", "Telugu", "Tamil"];
-
-const getInitialData = (role) => {
-  if (role === "patient") {
-    return { name: "", age: "", phone: "", language: "English", location: { village: "", district: "", state: "" } };
-  }
-  if (role === "doctor") {
-    return {
-      name: "", specialty: "", hospital: "", experience: "", description: "", image: "",
-      languages: [], qualifications: [], availability: [],
-      location: { city: "", district: "", state: "" },
-    };
-  }
-  if (role === "pharmacy") {
-    return {
-      name: "", image: "", contactPhone: "",
-      location: { village: "", city: "", district: "", state: "" },
-    };
-  }
-  return { name: "" };
-};
 
 function CreateProfile() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [data, setData] = useState(() => getInitialData(user.role));
-  const [saving, setSaving] = useState(false);
+  const [coords, setCoords] = useState(null);
 
-  const toNumberOrBlank = (v) => (v === "" || v === null || v === undefined ? v : Number(v));
+  const [patientForm, setPatientForm] = useState({
+    name: "", age: "", gender: "", phone: "",
+    location: { village: "", district: "", state: "" },
+    language: "English"
+  });
 
-  const handleCreate = async () => {
-    if (!data.name || !data.name.trim()) {
-      toast.error("Name is required");
+  const [doctorForm, setDoctorForm] = useState({
+    name: "", specialty: "", hospital: "", experience: "", description: "",
+    qualifications: [{ degree: "", institution: "", year: "" }],
+    location: { city: "", district: "", state: "" },
+    image: "",
+    languages: [],
+    availability: [{ day: "", slots: [""] }]
+  });
+
+  const [pharmacyForm, setPharmacyForm] = useState({
+    name: "", image: "", contactPhone: "",
+    location: { village: "", city: "", district: "", state: "" }
+  });
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported on this device");
       return;
     }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords([pos.coords.longitude, pos.coords.latitude]);
+        toast.success("Location detected!");
+      },
+      () => toast.error("Could not get location. Allow permission and try again.")
+    );
+  };
 
+  const addQualification = () => {
+    setDoctorForm({
+      ...doctorForm,
+      qualifications: [...doctorForm.qualifications, { degree: "", institution: "", year: "" }]
+    });
+  };
+  const updateQualification = (i, field, value) => {
+    const updated = [...doctorForm.qualifications];
+    updated[i][field] = value;
+    setDoctorForm({ ...doctorForm, qualifications: updated });
+  };
+  const removeQualification = (i) => {
+    setDoctorForm({ ...doctorForm, qualifications: doctorForm.qualifications.filter((_, idx) => idx !== i) });
+  };
+
+  const addAvailabilityDay = () => {
+    setDoctorForm({ ...doctorForm, availability: [...doctorForm.availability, { day: "", slots: [""] }] });
+  };
+  const updateAvailabilityDay = (i, value) => {
+    const updated = [...doctorForm.availability];
+    updated[i].day = value;
+    setDoctorForm({ ...doctorForm, availability: updated });
+  };
+  const addSlot = (dayIndex) => {
+    const updated = [...doctorForm.availability];
+    updated[dayIndex].slots.push("");
+    setDoctorForm({ ...doctorForm, availability: updated });
+  };
+  const updateSlot = (dayIndex, slotIndex, value) => {
+    const updated = [...doctorForm.availability];
+    updated[dayIndex].slots[slotIndex] = value;
+    setDoctorForm({ ...doctorForm, availability: updated });
+  };
+  const removeSlot = (dayIndex, slotIndex) => {
+    const updated = [...doctorForm.availability];
+    updated[dayIndex].slots = updated[dayIndex].slots.filter((_, i) => i !== slotIndex);
+    setDoctorForm({ ...doctorForm, availability: updated });
+  };
+  const removeAvailabilityDay = (i) => {
+    setDoctorForm({ ...doctorForm, availability: doctorForm.availability.filter((_, idx) => idx !== i) });
+  };
+
+  const handleCreate = async () => {
+    if (!coords) {
+      toast.error("Please detect your location first");
+      return;
+    }
     try {
-      setSaving(true);
-      const payload = { ...data, name: data.name.trim() };
-
+      let dataToSend;
       if (user.role === "patient") {
-        payload.age = toNumberOrBlank(payload.age);
+        dataToSend = { ...patientForm, location: { ...patientForm.location, coordinates: { type: "Point", coordinates: coords } } };
       }
-
       if (user.role === "doctor") {
-        payload.experience = toNumberOrBlank(payload.experience);
-        payload.qualifications = (payload.qualifications || [])
-          .filter((q) => q.degree || q.institution || q.year)
-          .map((q) => ({ ...q, year: toNumberOrBlank(q.year) }));
-        payload.availability = (payload.availability || [])
-          .map((a) => ({
-            ...a,
-            slots: (a.slots || []).map((s) => s.trim()).filter(Boolean),
-          }))
-          .filter((a) => a.day && a.slots.length > 0);
+        dataToSend = { ...doctorForm, location: { ...doctorForm.location, coordinates: { type: "Point", coordinates: coords } } };
+      }
+      if (user.role === "pharmacy") {
+        dataToSend = { ...pharmacyForm, location: { ...pharmacyForm.location, coordinates: { type: "Point", coordinates: coords } } };
       }
 
-      await createProfile(user.role, payload);
+      await createProfile(user.role, dataToSend);
       toast.success("Profile created!");
-      navigate("/profile");
+      navigate("/");
     } catch (err) {
-      toast.error("Could not create profile");
-    } finally {
-      setSaving(false);
+      toast.error("Failed to create profile");
     }
   };
 
-  // ---------- Generic helpers ----------
-  const setField = (field, value) => setData((d) => ({ ...d, [field]: value }));
-
-  const updateLocation = (field, value) =>
-    setData((d) => ({ ...d, location: { ...(d.location || {}), [field]: value } }));
-
-  // ---------- Qualifications ----------
-  const addQualification = () =>
-    setData((d) => ({
-      ...d,
-      qualifications: [...(d.qualifications || []), { degree: "", institution: "", year: "" }],
-    }));
-
-  const updateQualification = (i, field, value) =>
-    setData((d) => ({
-      ...d,
-      qualifications: (d.qualifications || []).map((q, idx) =>
-        idx === i ? { ...q, [field]: value } : q
-      ),
-    }));
-
-  const removeQualification = (i) =>
-    setData((d) => ({
-      ...d,
-      qualifications: (d.qualifications || []).filter((_, idx) => idx !== i),
-    }));
-
-  // ---------- Availability ----------
-  const addAvailabilityDay = () =>
-    setData((d) => ({
-      ...d,
-      availability: [...(d.availability || []), { day: "", slots: [""] }],
-    }));
-
-  const updateAvailabilityDay = (i, value) =>
-    setData((d) => ({
-      ...d,
-      availability: (d.availability || []).map((a, idx) =>
-        idx === i ? { ...a, day: value } : a
-      ),
-    }));
-
-  const removeAvailabilityDay = (i) =>
-    setData((d) => ({
-      ...d,
-      availability: (d.availability || []).filter((_, idx) => idx !== i),
-    }));
-
-  const addSlot = (dayIndex) =>
-    setData((d) => ({
-      ...d,
-      availability: (d.availability || []).map((a, idx) =>
-        idx === dayIndex ? { ...a, slots: [...(a.slots || []), ""] } : a
-      ),
-    }));
-
-  const updateSlot = (dayIndex, slotIndex, value) =>
-    setData((d) => ({
-      ...d,
-      availability: (d.availability || []).map((a, idx) =>
-        idx === dayIndex
-          ? { ...a, slots: (a.slots || []).map((s, si) => (si === slotIndex ? value : s)) }
-          : a
-      ),
-    }));
-
-  const removeSlot = (dayIndex, slotIndex) =>
-    setData((d) => ({
-      ...d,
-      availability: (d.availability || []).map((a, idx) =>
-        idx === dayIndex
-          ? { ...a, slots: (a.slots || []).filter((_, si) => si !== slotIndex) }
-          : a
-      ),
-    }));
-
   return (
-    <Container maxWidth="sm" sx={{ marginTop: 4, marginBottom: 4 }}>
-      <Paper sx={{ padding: 3 }}>
-        <Typography variant="h5" gutterBottom>Create Profile</Typography>
-
-        <TextField fullWidth required label="Name" margin="normal" value={data.name ?? ""}
-          onChange={(e) => setField("name", e.target.value)} />
+    <Container maxWidth="xs" sx={{ marginTop: 8, marginBottom: 4 }}>
+      <Paper sx={{ padding: 4 }}>
+        <Typography variant="h5" gutterBottom>Complete Your Profile</Typography>
 
         {user.role === "patient" && (
           <>
-            <TextField fullWidth label="Age" type="number" margin="normal" value={data.age ?? ""}
-              onChange={(e) => setField("age", e.target.value)} />
-            <TextField fullWidth label="Phone" margin="normal" value={data.phone ?? ""}
-              onChange={(e) => setField("phone", e.target.value)} />
-            <TextField fullWidth label="Village" margin="normal" value={data.location?.village ?? ""}
-              onChange={(e) => updateLocation("village", e.target.value)} />
-            <TextField fullWidth label="District" margin="normal" value={data.location?.district ?? ""}
-              onChange={(e) => updateLocation("district", e.target.value)} />
-            <TextField fullWidth label="State" margin="normal" value={data.location?.state ?? ""}
-              onChange={(e) => updateLocation("state", e.target.value)} />
-            <TextField select fullWidth label="Language" margin="normal" value={data.language || "English"}
-              onChange={(e) => setField("language", e.target.value)}>
-              {LANGUAGES_LIST.map((l) => <MenuItem key={l} value={l}>{l}</MenuItem>)}
+            <TextField fullWidth label="Name" margin="normal" value={patientForm.name}
+              onChange={(e) => setPatientForm({ ...patientForm, name: e.target.value })} />
+            <TextField fullWidth label="Age" type="number" margin="normal" value={patientForm.age}
+              onChange={(e) => setPatientForm({ ...patientForm, age: e.target.value })} />
+            <TextField select fullWidth label="Gender" margin="normal" value={patientForm.gender}
+              onChange={(e) => setPatientForm({ ...patientForm, gender: e.target.value })}>
+              <MenuItem value="male">Male</MenuItem>
+              <MenuItem value="female">Female</MenuItem>
+              <MenuItem value="other">Other</MenuItem>
+            </TextField>
+            <TextField fullWidth label="Phone" margin="normal" value={patientForm.phone}
+              onChange={(e) => setPatientForm({ ...patientForm, phone: e.target.value })} />
+            <TextField fullWidth label="Village" margin="normal" value={patientForm.location.village}
+              onChange={(e) => setPatientForm({ ...patientForm, location: { ...patientForm.location, village: e.target.value } })} />
+            <TextField fullWidth label="District" margin="normal" value={patientForm.location.district}
+              onChange={(e) => setPatientForm({ ...patientForm, location: { ...patientForm.location, district: e.target.value } })} />
+            <TextField fullWidth label="State" margin="normal" value={patientForm.location.state}
+              onChange={(e) => setPatientForm({ ...patientForm, location: { ...patientForm.location, state: e.target.value } })} />
+            <TextField select fullWidth label="Preferred Language" margin="normal" value={patientForm.language}
+              onChange={(e) => setPatientForm({ ...patientForm, language: e.target.value })}>
+              {LANGUAGES.map(l => <MenuItem key={l} value={l}>{l}</MenuItem>)}
             </TextField>
           </>
         )}
 
         {user.role === "doctor" && (
           <>
-            <TextField fullWidth label="Specialty" margin="normal" value={data.specialty ?? ""}
-              onChange={(e) => setField("specialty", e.target.value)} />
-            <TextField fullWidth label="Hospital" margin="normal" value={data.hospital ?? ""}
-              onChange={(e) => setField("hospital", e.target.value)} />
-            <TextField fullWidth label="Experience (years)" type="number" margin="normal" value={data.experience ?? ""}
-              onChange={(e) => setField("experience", e.target.value)} />
-            <TextField fullWidth label="Description" multiline rows={3} margin="normal" value={data.description ?? ""}
-              onChange={(e) => setField("description", e.target.value)} />
+            <TextField fullWidth label="Name" margin="normal" value={doctorForm.name}
+              onChange={(e) => setDoctorForm({ ...doctorForm, name: e.target.value })} />
+            <TextField fullWidth label="Specialty" margin="normal" value={doctorForm.specialty}
+              onChange={(e) => setDoctorForm({ ...doctorForm, specialty: e.target.value })} />
+            <TextField fullWidth label="Hospital" margin="normal" value={doctorForm.hospital}
+              onChange={(e) => setDoctorForm({ ...doctorForm, hospital: e.target.value })} />
+            <TextField fullWidth label="Experience (years)" type="number" margin="normal" value={doctorForm.experience}
+              onChange={(e) => setDoctorForm({ ...doctorForm, experience: e.target.value })} />
+            <TextField fullWidth label="About You" margin="normal" multiline rows={3} value={doctorForm.description}
+              onChange={(e) => setDoctorForm({ ...doctorForm, description: e.target.value })} />
+
+            <TextField fullWidth label="Image URL (optional)" margin="normal" value={doctorForm.image}
+              onChange={(e) => setDoctorForm({ ...doctorForm, image: e.target.value })}
+              helperText="Leave blank to use default photo" />
+
+            <TextField select fullWidth label="Languages Spoken" margin="normal" SelectProps={{ multiple: true }}
+              value={doctorForm.languages}
+              onChange={(e) => setDoctorForm({ ...doctorForm, languages: e.target.value })}>
+              {LANGUAGES.map(l => <MenuItem key={l} value={l}>{l}</MenuItem>)}
+            </TextField>
 
             <Typography sx={{ marginTop: 2 }}>Qualifications</Typography>
-            {(data.qualifications || []).map((q, i) => (
+            {doctorForm.qualifications.map((q, i) => (
               <Box key={i} sx={{ display: "flex", gap: 1, marginTop: 1 }}>
-                <TextField size="small" label="Degree" value={q.degree ?? ""}
+                <TextField size="small" label="Degree" value={q.degree}
                   onChange={(e) => updateQualification(i, "degree", e.target.value)} />
-                <TextField size="small" label="Institution" value={q.institution ?? ""}
+                <TextField size="small" label="Institution" value={q.institution}
                   onChange={(e) => updateQualification(i, "institution", e.target.value)} />
-                <TextField size="small" label="Year" type="number" value={q.year ?? ""} sx={{ width: 90 }}
+                <TextField size="small" label="Year" type="number" value={q.year} sx={{ width: 90 }}
                   onChange={(e) => updateQualification(i, "year", e.target.value)} />
                 <IconButton color="error" onClick={() => removeQualification(i)}><DeleteIcon /></IconButton>
               </Box>
             ))}
             <Button sx={{ marginTop: 1 }} onClick={addQualification}>+ Add Qualification</Button>
 
-            <TextField fullWidth label="Image URL" margin="normal" value={data.image ?? ""}
-              onChange={(e) => setField("image", e.target.value)}
-              helperText="Leave blank to use default photo" />
-
-            <TextField select fullWidth label="Languages Spoken" margin="normal"
-              SelectProps={{ multiple: true }}
-              value={data.languages || []}
-              onChange={(e) => setField("languages", e.target.value)}>
-              {LANGUAGES_LIST.map((l) => <MenuItem key={l} value={l}>{l}</MenuItem>)}
-            </TextField>
-
             <Typography sx={{ marginTop: 2 }}>Availability</Typography>
-            {(data.availability || []).map((a, dayIndex) => (
+            {doctorForm.availability.map((a, dayIndex) => (
               <Box key={dayIndex} sx={{ marginTop: 1, padding: 1, border: "1px solid #ddd", borderRadius: 1 }}>
                 <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                  <TextField select size="small" label="Day" value={a.day || ""} sx={{ minWidth: 130 }}
+                  <TextField select size="small" label="Day" value={a.day} sx={{ minWidth: 130 }}
                     onChange={(e) => updateAvailabilityDay(dayIndex, e.target.value)}>
-                    {DAYS.map((d) => <MenuItem key={d} value={d}>{d}</MenuItem>)}
+                    {DAYS.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                   </TextField>
                   <IconButton color="error" onClick={() => removeAvailabilityDay(dayIndex)}><DeleteIcon /></IconButton>
                 </Box>
-                {(a.slots || []).map((slot, slotIndex) => (
+                {a.slots.map((slot, slotIndex) => (
                   <Box key={slotIndex} sx={{ display: "flex", gap: 1, marginTop: 1 }}>
-                    <TextField size="small" label="Time (e.g. 10:00 AM)" value={slot ?? ""}
+                    <TextField size="small" label="Time (e.g. 10:00 AM)" value={slot}
                       onChange={(e) => updateSlot(dayIndex, slotIndex, e.target.value)} />
                     <IconButton color="error" onClick={() => removeSlot(dayIndex, slotIndex)}><DeleteIcon /></IconButton>
                   </Box>
@@ -235,38 +206,43 @@ function CreateProfile() {
             ))}
             <Button sx={{ marginTop: 1 }} onClick={addAvailabilityDay}>+ Add Day</Button>
 
-            <TextField fullWidth label="City" margin="normal" value={data.location?.city ?? ""}
-              onChange={(e) => updateLocation("city", e.target.value)} />
-            <TextField fullWidth label="District" margin="normal" value={data.location?.district ?? ""}
-              onChange={(e) => updateLocation("district", e.target.value)} />
-            <TextField fullWidth label="State" margin="normal" value={data.location?.state ?? ""}
-              onChange={(e) => updateLocation("state", e.target.value)} />
+            <TextField fullWidth label="City" margin="normal" value={doctorForm.location.city}
+              onChange={(e) => setDoctorForm({ ...doctorForm, location: { ...doctorForm.location, city: e.target.value } })} />
+            <TextField fullWidth label="District" margin="normal" value={doctorForm.location.district}
+              onChange={(e) => setDoctorForm({ ...doctorForm, location: { ...doctorForm.location, district: e.target.value } })} />
+            <TextField fullWidth label="State" margin="normal" value={doctorForm.location.state}
+              onChange={(e) => setDoctorForm({ ...doctorForm, location: { ...doctorForm.location, state: e.target.value } })} />
           </>
         )}
 
         {user.role === "pharmacy" && (
           <>
-            <TextField fullWidth label="Image URL" margin="normal" value={data.image ?? ""}
-              onChange={(e) => setField("image", e.target.value)} />
-            <TextField fullWidth label="Contact Phone" margin="normal" value={data.contactPhone ?? ""}
-              onChange={(e) => setField("contactPhone", e.target.value)} />
-            <TextField fullWidth label="Village/Area" margin="normal" value={data.location?.village ?? ""}
-              onChange={(e) => updateLocation("village", e.target.value)} />
-            <TextField fullWidth label="City" margin="normal" value={data.location?.city ?? ""}
-              onChange={(e) => updateLocation("city", e.target.value)} />
-            <TextField fullWidth label="District" margin="normal" value={data.location?.district ?? ""}
-              onChange={(e) => updateLocation("district", e.target.value)} />
-            <TextField fullWidth label="State" margin="normal" value={data.location?.state ?? ""}
-              onChange={(e) => updateLocation("state", e.target.value)} />
+            <TextField fullWidth label="Pharmacy Name" margin="normal" value={pharmacyForm.name}
+              onChange={(e) => setPharmacyForm({ ...pharmacyForm, name: e.target.value })} />
+            <TextField fullWidth label="Image URL" margin="normal" value={pharmacyForm.image}
+              onChange={(e) => setPharmacyForm({ ...pharmacyForm, image: e.target.value })} />
+            <TextField fullWidth label="Contact Phone" margin="normal" value={pharmacyForm.contactPhone}
+              onChange={(e) => setPharmacyForm({ ...pharmacyForm, contactPhone: e.target.value })} />
+            <TextField fullWidth label="Village/Area" margin="normal" value={pharmacyForm.location.village}
+              onChange={(e) => setPharmacyForm({ ...pharmacyForm, location: { ...pharmacyForm.location, village: e.target.value } })} />
+            <TextField fullWidth label="City" margin="normal" value={pharmacyForm.location.city}
+              onChange={(e) => setPharmacyForm({ ...pharmacyForm, location: { ...pharmacyForm.location, city: e.target.value } })} />
+            <TextField fullWidth label="District" margin="normal" value={pharmacyForm.location.district}
+              onChange={(e) => setPharmacyForm({ ...pharmacyForm, location: { ...pharmacyForm.location, district: e.target.value } })} />
+            <TextField fullWidth label="State" margin="normal" value={pharmacyForm.location.state}
+              onChange={(e) => setPharmacyForm({ ...pharmacyForm, location: { ...pharmacyForm.location, state: e.target.value } })} />
           </>
         )}
 
-        <Button fullWidth variant="contained" sx={{ marginTop: 3 }} onClick={handleCreate} disabled={saving}>
-          {saving ? "Creating..." : "Create Profile"}
+        <Button fullWidth variant="outlined" sx={{ marginTop: 2 }} onClick={detectLocation}>
+          {coords ? "Location Detected ✓" : "Detect My Location (GPS)"}
+        </Button>
+
+        <Button fullWidth variant="contained" sx={{ marginTop: 2 }} onClick={handleCreate}>
+          Save Profile
         </Button>
       </Paper>
     </Container>
   );
 }
-
 export default CreateProfile;

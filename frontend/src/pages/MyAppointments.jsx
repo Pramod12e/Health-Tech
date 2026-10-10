@@ -3,6 +3,8 @@ import { getDoctorConsultations, updateConsultationStatus, startCall, endCall, a
 import { Container, Typography, Paper, Box, Chip, Button, Tabs, Tab, Dialog, DialogTitle, DialogContent, TextField, IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
 
 const STATUS_COLOR = {
   pending: "warning",
@@ -19,7 +21,8 @@ function MyAppointments() {
   const [activeConsult, setActiveConsult] = useState(null);
   const [notes, setNotes] = useState("");
   const [medicines, setMedicines] = useState([{ name: "", dosage: "", duration: "" }]);
-
+  const navigate = useNavigate();
+  
   const load = () => {
     getDoctorConsultations().then((res) => setList(res.data)).catch(() => toast.error("Failed to load"));
   };
@@ -38,9 +41,8 @@ function MyAppointments() {
 
   const handleStartCall = async (id) => {
     try {
-      await startCall(id);
-      toast.success("Call started");
-      load();
+      const res = await startCall(id);
+      navigate(`/call/${res.data.roomId}`, { state: { consultationId: id, role: "doctor" } });
     } catch {
       toast.error("Could not start call");
     }
