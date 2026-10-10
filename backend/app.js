@@ -31,7 +31,7 @@ app.use(methodOverride("_method"));
 
 app.set("view engine","ejs");
 app.set("views", path.join(__dirname,"/views"));
-app.set("trust proxy", 1);
+
 
 const Patient = require("./models/patient.js");
 const Doctor = require("./models/doctor.js");
@@ -96,23 +96,26 @@ const store = MongoStore.create({
 });
 store.on("error", (e) => console.log("SESSION STORE ERROR", e));
 
-const sessionOptions  = {
-  secret: process.env.SECRET, 
-  resave:false,
-  saveUninitialized:true,
-  cookie:{
-      expires:Date.now() + 7*24*60*60*1000,
-      maxAge: 7*24*60*60*1000,
-      httpOnly:true,
-      secure: isProd,                      // https only in production
-      sameSite: isProd ? "none" : "lax",   // needed because frontend and backend are on different domains
-  }
-}
+const sessionOptions = {
+  store,                          // this line was missing
+  secret: process.env.SECRET,
+  resave: false,
+  saveUninitialized: false,       // was true
+  cookie: {
+    maxAge: 7 * 24 * 60 * 60 * 1000,   // I removed the "expires" line
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+  },
+};
+
+
 
 app.use(cors({ 
   origin: process.env.FRONTEND_URL || "http://localhost:5173",   // no trailing slash
   credentials: true 
 }));
+app.set("trust proxy", 1);
 app.use(session(sessionOptions));
 
 app.use(passport.initialize());
