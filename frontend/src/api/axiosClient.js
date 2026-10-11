@@ -2,6 +2,9 @@ import axios from "axios";
 
 export const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+const API_BASE = import.meta.env.PROD ? "/api" : BACKEND_URL;
+axios.defaults.withCredentials = true;
+
 axios.defaults.withCredentials = true; 
 const axiosClient = axios.create({
   baseURL: BACKEND_URL,
