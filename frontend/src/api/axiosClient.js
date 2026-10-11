@@ -7,7 +7,7 @@ axios.defaults.withCredentials = true;
 
 axios.defaults.withCredentials = true; 
 const axiosClient = axios.create({
-  baseURL: BACKEND_URL,
+  baseURL: API_BASE,
   withCredentials: true
 });
 
